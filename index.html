@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Vote-Guard | Voting Security System</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header class="navbar">
+
+        <div class="logo">
+            <span class="logo-icon">🛡️</span>
+            <span>VOTE-GUARD</span>
+        </div>
+
+        <div class="admin-section">
+            <span class="admin-name">Admin</span>
+            <button class="logout-btn">Logout</button>
+        </div>
+
+    </header>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="dashboard">
+
+        <!-- Page Heading -->
+        <div class="page-heading">
+            <div>
+                <h1>Voting Security Dashboard</h1>
+                <p>Monitor voter verification and detect suspicious voting attempts.</p>
+            </div>
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                System Online
+            </div>
+        </div>
+
+
+        <!-- ================= STAT CARDS ================= -->
+        <section class="stats-container">
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+
+                <div>
+                    <p>Total Voters</p>
+                    <h2 id="totalVoters">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">✓</div>
+
+                <div>
+                    <p>Votes Recorded</p>
+                    <h2 id="votesRecorded">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">◷</div>
+
+                <div>
+                    <p>Pending Votes</p>
+                    <h2 id="pendingVotes">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">⚠</div>
+
+                <div>
+                    <p>Fraud Attempts</p>
+                    <h2 id="fraudAttempts">0</h2>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ================= VERIFICATION + INFO ================= -->
+        <section class="main-grid">
+
+            <!-- Voter Verification -->
+            <div class="verification-card">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Voter Verification</h2>
+                        <p>Enter RFID / Voter ID to verify voter.</p>
+                    </div>
+
+                    <span class="rfid-icon">RFID</span>
+                </div>
+
+
+                <div class="verification-form">
+
+                    <label for="voterInput">
+                        RFID / Voter ID
+                    </label>
+
+                    <div class="input-group">
+
+                        <input
+                            type="text"
+                            id="voterInput"
+                            placeholder="Example: RFID001"
+                            autocomplete="off"
+                        >
+
+                        <button id="verifyBtn">
+                            Verify Voter
+                        </button>
+
+                    </div>
+
+                    <div id="verificationMessage" class="verification-message"></div>
+
+                </div>
+
+            </div>
+
+
+           <!-- ================= RECORDED VOTERS ================= -->
+
+            <!-- ================= RECORDED VOTERS ================= -->
+
+<div class="recorded-card">
+
+    <div class="card-header">
+
+        <div>
+            <h2>Recorded Voters</h2>
+            <p>RFID numbers of voters who have voted.</p>
+        </div>
+
+        <span class="recorded-count" id="recordedCount">
+            0 Voters
+        </span>
+
+    </div>
+
+    <div class="recorded-list" id="recordedVotersTable">
+
+        <div class="no-recorded">
+            No votes recorded yet.
+        </div>
+
+    </div>
+
+</div>
+</section>
+
+
+        <!-- ================= RECENT VERIFICATION ================= -->
+        <section class="recent-section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Recent Verification Activity</h2>
+                    <p>Latest voter verification attempts.</p>
+                </div>
+
+                <button id="resetBtn" class="reset-btn">
+                    Reset Demo
+                </button>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Voter ID</th>
+                            <th>Name</th>
+                            <th>RFID</th>
+                            <th>Status</th>
+                            <th>Verification</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="activityTable">
+
+                        <tr>
+                            <td colspan="6" class="empty-row">
+                                No verification activity yet.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+</html>
