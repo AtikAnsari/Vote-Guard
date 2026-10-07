@@ -106,6 +106,9 @@ const recordedVotersTable =
 const recordedCount =
     document.getElementById("recordedCount");
 
+const themeSelect =
+    document.getElementById("themeSelect");
+
 
 /* ================= UPDATE DASHBOARD ================= */
 
@@ -345,6 +348,8 @@ function verifyVoter() {
 
     if (input === "") {
 
+        verificationMessage.classList.remove("duplicate-alert");
+
         verificationMessage.textContent =
             "Please enter an RFID or Voter ID.";
 
@@ -368,6 +373,8 @@ function verifyVoter() {
     /* ================= NOT REGISTERED ================= */
 
     if (!voter) {
+
+        verificationMessage.classList.remove("duplicate-alert");
 
         verificationMessage.textContent =
             "❌ Voter is not registered.";
@@ -396,10 +403,14 @@ function verifyVoter() {
 
         fraudAttempts++;
 
+        verificationMessage.classList.remove("duplicate-alert");
+        void verificationMessage.offsetWidth;
+        verificationMessage.classList.add("duplicate-alert");
+
         verificationMessage.textContent =
             "🚨 Duplicate Voting Detected!";
 
-        verificationMessage.style.color = "#d64545";
+        verificationMessage.style.color = "";
 
 
         addActivity(
@@ -425,6 +436,7 @@ function verifyVoter() {
 
     voter.status = "Voted";
 
+    verificationMessage.classList.remove("duplicate-alert");
 
     verificationMessage.textContent =
         "✅ Voter Verified Successfully.";
@@ -508,6 +520,8 @@ resetBtn.addEventListener(
         displayActivities();
 
 
+        verificationMessage.classList.remove("duplicate-alert");
+
         verificationMessage.textContent =
             "Demo data has been reset.";
 
@@ -518,7 +532,70 @@ resetBtn.addEventListener(
 );
 
 
+/* ================= THEME CONTROLLER ================= */
+
+const THEME_STORAGE_KEY = "voteGuardTheme";
+const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+function getSavedTheme() {
+    return localStorage.getItem(THEME_STORAGE_KEY) || "light";
+}
+
+function applyTheme(theme, persist = true) {
+    const selectedTheme =
+        (theme === "dark" || theme === "system" || theme === "light")
+            ? theme
+            : "light";
+
+    if (persist) {
+        localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+    }
+
+    if (themeSelect && themeSelect.value !== selectedTheme) {
+        themeSelect.value = selectedTheme;
+    }
+
+    let isDark = false;
+    if (selectedTheme === "dark") {
+        isDark = true;
+    } else if (selectedTheme === "system") {
+        isDark = systemThemeQuery.matches;
+    } else {
+        isDark = false; // "light" is default
+    }
+
+    if (isDark) {
+        document.documentElement.setAttribute("data-theme", "dark");
+        document.body.classList.add("dark-theme");
+    } else {
+        document.documentElement.setAttribute("data-theme", "light");
+        document.body.classList.remove("dark-theme");
+    }
+}
+
+function handleSystemThemeChange() {
+    const currentTheme = getSavedTheme();
+    if (currentTheme === "system") {
+        applyTheme("system", false);
+    }
+}
+
+if (systemThemeQuery.addEventListener) {
+    systemThemeQuery.addEventListener("change", handleSystemThemeChange);
+} else if (systemThemeQuery.addListener) {
+    systemThemeQuery.addListener(handleSystemThemeChange);
+}
+
+if (themeSelect) {
+    themeSelect.addEventListener("change", function () {
+        applyTheme(this.value, true);
+    });
+}
+
+
 /* ================= INITIAL LOAD ================= */
+
+applyTheme(getSavedTheme(), false);
 
 updateDashboard();
 
