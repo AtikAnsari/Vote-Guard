@@ -1,5 +1,6 @@
 # Vote-Guard: RFID-Based Voter Verification & Duplicate-Vote Prevention Platform
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2563EB?style=for-the-badge&logo=githubpages&logoColor=white)](https://atikansari.github.io/Vote-Guard/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Python](https://img.shields.io/badge/Python-3.10%2B%20%7C%203.14-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
@@ -15,23 +16,28 @@
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
-2. [Problem Statement](#2-problem-statement)
-3. [Project Objectives](#3-project-objectives)
-4. [Key Features](#4-key-features)
-5. [Technology Stack](#5-technology-stack)
-6. [System Architecture](#6-system-architecture)
-7. [Project Workflow](#7-project-workflow)
-8. [Project Folder Structure](#8-project-folder-structure)
-9. [Installation and Setup](#9-installation-and-setup)
-10. [Backend Configuration](#10-backend-configuration)
-11. [Database Configuration](#11-database-configuration)
-12. [ESP32 and RC522 Hardware Setup (Optional)](#12-esp32-and-rc522-hardware-setup-optional)
-13. [API Overview](#13-api-overview)
-14. [Demo Instructions](#14-demo-instructions)
-15. [Security & Architectural Scope](#15-security--architectural-scope)
-16. [Current Project Status](#16-current-project-status)
-17. [Future Enhancements](#17-future-enhancements)
-18. [Contributors & Project Credits](#18-contributors--project-credits)
+2. [Live Demo & Operating Modes](#2-live-demo--operating-modes)
+   - [Live Demo](#live-demo)
+   - [Demo Mode vs Full-Stack Mode](#demo-mode-vs-full-stack-mode)
+   - [Public Demo Credentials](#public-demo-credentials)
+   - [Application Screenshots](#application-screenshots)
+3. [Problem Statement](#3-problem-statement)
+4. [Project Objectives](#4-project-objectives)
+5. [Key Features](#5-key-features)
+6. [Technology Stack](#6-technology-stack)
+7. [System Architecture](#7-system-architecture)
+8. [Project Workflow](#8-project-workflow)
+9. [Project Folder Structure](#9-project-folder-structure)
+10. [Installation and Setup](#10-installation-and-setup)
+11. [Backend Configuration](#11-backend-configuration)
+12. [Database Configuration](#12-database-configuration)
+13. [ESP32 and RC522 Hardware Setup (Optional)](#13-esp32-and-rc522-hardware-setup-optional)
+14. [API Overview](#14-api-overview)
+15. [Demo Instructions](#15-demo-instructions)
+16. [Security & Architectural Scope](#16-security--architectural-scope)
+17. [Current Project Status](#17-current-project-status)
+18. [Future Enhancements](#18-future-enhancements)
+19. [Contributors & Project Credits](#19-contributors--project-credits)
 
 ---
 
@@ -47,7 +53,106 @@ The platform introduces a multi-tier verification workflow:
 
 ---
 
-## 2. Problem Statement
+## 2. Live Demo & Operating Modes
+
+### Live Demo
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2563EB?style=for-the-badge&logo=githubpages&logoColor=white)](https://atikansari.github.io/Vote-Guard/)
+
+**Live Demo URL:** [https://atikansari.github.io/Vote-Guard/](https://atikansari.github.io/Vote-Guard/)
+
+> [!NOTE]
+> This is a **publicly accessible simulated demonstration** hosted directly on GitHub Pages. It allows recruiters, developers, and evaluators to interact with the voting verification workflows, test simulated RFID card scans, and verify duplicate-vote prevention in real time without installing Python, configuring MySQL, or connecting physical microcontrollers.
+
+---
+
+### Demo Mode vs Full-Stack Mode
+
+Vote-Guard maintains **one unified repository** engineered with **two distinct operating modes**:
+
+| Feature / Aspect | 🌐 Public Demo Mode (GitHub Pages) | ⚡ Full-Stack Mode (Local / Field) |
+| :--- | :--- | :--- |
+| **Hosting & URL** | Hosted statically on GitHub Pages: `https://atikansari.github.io/Vote-Guard/` | Runs locally via Uvicorn: `http://127.0.0.1:8000` |
+| **Frontend Stack** | HTML5, CSS3, Vanilla ES6+ JavaScript | HTML5, CSS3, Vanilla ES6+ JavaScript |
+| **Backend Engine** | `demo-mock-engine.js` (In-browser mock engine) | Python FastAPI asynchronous REST backend |
+| **Data Persistence** | Browser `localStorage` (Isolated namespace `voteGuard_demo_*`) | MySQL 8.0+ (InnoDB ACID row-level write-locks) |
+| **Database ORM** | In-memory JavaScript collections | SQLAlchemy 2.0 ORM |
+| **RFID Verification** | Interactive on-screen RFID hardware simulator dock | Physical ESP32 DevKit V1 + RC522 RFID reader |
+| **Actuator Feedback** | Screen LED lamps + Web Audio API synthesizer | Physical Green, Yellow, Red LEDs + Active Piezo Buzzer |
+| **Hardware Required** | **None** (Zero hardware, zero local installation) | ESP32 DevKit V1, RC522 reader, LEDs, Buzzer |
+| **Backend Dependencies**| **None** (No FastAPI, No Python, No MySQL) | Python 3.10+, FastAPI, MySQL Server, PyMySQL |
+| **Data Isolation** | Browser-specific, non-persistent across devices | Centralized, persistent across all polling stations |
+| **Data Reset** | One-click button resets `localStorage` to seed state | Dedicated administrative reset endpoint |
+
+#### Public Demo Mode
+- **Hosted using GitHub Pages:** Served statically directly from the root repository on the `main` branch.
+- **Pure Client-Side Stack:** Uses semantic HTML, responsive CSS, and Vanilla JavaScript with `demo-mock-engine.js`.
+- **Browser LocalStorage:** Simulates the centralized database in `localStorage` under dedicated namespaces (`voteGuard_demo_voters`, `voteGuard_demo_credentials`, `voteGuard_demo_users`, `voteGuard_demo_audit`, `voteGuard_demo_latestEvent`). Local browser storage is used strictly for client-side demonstration state and is not tamper-proof or cryptographically secure.
+- **Fictional Voter Records:** Uses synthetic sample identities (Aman Patel, Priya Sharma, Rajesh Kumar, Sunita Devi, Vikram Singh).
+- **Simulated RFID Verification:** Features an on-screen simulator dock on the Operator Terminal for valid, duplicate, and unregistered card scans.
+- **Duplicate Voting Prevention Demonstrations:** Simulates duplicate-vote prevention using browser-side logic to replicate single-vote verification.
+- **No External Backend or Hardware Required:** Does not require FastAPI, MySQL, ESP32 microcontrollers, or physical RC522 readers.
+- **Zero Real Network Calls:** Operates entirely in client memory; does not connect to the actual backend or external databases.
+- **Browser-Specific & Resettable:** Changes exist only in the visitor's local browser and can be reset to pristine seed data with one click.
+
+#### Full-Stack Mode
+- **Runs Locally:** Accessed through `http://127.0.0.1:8000`.
+- **Frontend:** Standard responsive web interface (`index.html`, `login.html`, `operator.html`, `admin.html`).
+- **Backend:** High-performance asynchronous Python FastAPI framework with Pydantic type validation.
+- **Database:** MySQL 8.0 database with InnoDB storage engine enforcing relational constraints.
+- **ORM:** SQLAlchemy 2.0 managing transactions, relationships, and queries.
+- **Hardware Integration:** Real-time communication with ESP32 DevKit V1 and MFRC522 13.56 MHz RFID readers over Wi-Fi (HTTP POST) or USB COM port (115200 baud).
+- **Actual Backend Authentication:** PBKDF2-HMAC-SHA256 password hashing with 100,000 iterations and RFC 7519 HMAC-SHA256 JWT session tokens.
+- **Physical Actuation:** Drives physical Green, Yellow, and Red LEDs and an active buzzer on the polling kiosk.
+
+> [!IMPORTANT]
+> **Hosting Clarification:** GitHub Pages hosts **only the public demonstration**, not the FastAPI backend or MySQL database. To experience Full-Stack Mode with live database transactions or physical hardware, run the project locally following the [Installation and Setup](#10-installation-and-setup) guide.
+
+---
+
+### Public Demo Credentials
+
+Visitors can explore both role-based dashboards in the live demo using the pre-configured credentials:
+
+| Role | Username | Password | Dashboard Access | Access URL |
+| :--- | :--- | :--- | :--- | :--- |
+| **Polling Operator** | `operator` | `operator123` | Live RFID terminal, scan simulator, and audio alerts | [`operator.html`](https://atikansari.github.io/Vote-Guard/operator.html) |
+| **System Administrator** | `admin` | `admin123` | Voter management, 2FA KYC binding, stats, and audit trail | [`admin.html`](https://atikansari.github.io/Vote-Guard/admin.html) |
+
+> [!WARNING]
+> **Public Demonstration Notice:**
+> - These are **public demonstration credentials** intended strictly for exploring the interactive demo.
+> - **Never use these default credentials** for real authentication or production deployments.
+> - Anyone visiting the public demo can log in with these credentials.
+> - The public demo uses simulated client-side session routing and is **not presented as a production-secure voting system**. Real cryptographic authentication (PBKDF2-HMAC-SHA256 password hashing with 100,000 iterations and RFC 7519 HMAC-SHA256 JWT tokens) is implemented exclusively in Full-Stack Mode through the FastAPI backend.
+
+---
+
+### Application Screenshots
+
+#### Operator Dashboard
+The Polling Booth Operator Terminal features live RFID card verification, single-focus visual status indicators, synchronized LED lamps, audio buzzer feedback, and the interactive RFID test scanner dock:
+
+![Operator Dashboard](screenshots/operator.png)
+
+#### Admin Dashboard
+The Administrative Console provides real-time turnout metrics, 2FA government KYC credential binding, official registered voter directory, recorded vote list, and simulated audit activity:
+
+![Admin Dashboard](screenshots/admin.png)
+
+#### Login Portal
+The entry portal provides role-based authentication with quick-fill demo buttons and theme switching:
+
+![Login Portal](screenshots/login.png)
+
+#### Account Registration
+Administrative form binding physical RFID tag UIDs to pre-authorized Aadhaar and EPIC credentials with duplicate-identity prevention:
+
+![Account Registration](screenshots/signup.png)
+
+---
+
+## 3. Problem Statement
 
 Conventional manual and standalone electronic electoral systems face operational challenges:
 1. **Voter Impersonation & Forgery:** Traditional paper voter slips or unverified physical photo cards can be forged or presented by unauthorized proxies.
@@ -57,7 +162,7 @@ Conventional manual and standalone electronic electoral systems face operational
 
 ---
 
-## 3. Project Objectives
+## 4. Project Objectives
 
 - **Enforce Exactly-Once Invariant:** Mathematically guarantee that every registered voter record transitions from `has_voted = FALSE` to `TRUE` exactly once ($V = 1$), rejecting subsequent attempts ($V > 1$) in both automated test suites and real-time operational testing.
 - **Relational Demographic Binding:** Prevent multi-card issuance by enforcing strict database uniqueness constraints across RFID UIDs, simulated Aadhaar numbers, and EPIC codes.
@@ -67,7 +172,7 @@ Conventional manual and standalone electronic electoral systems face operational
 
 ---
 
-## 4. Key Features
+## 5. Key Features
 
 - **Atomic Verification Engine:** Evaluates RFID tags using a single conditional write query in MySQL. If `has_voted` is `FALSE`, the vote is committed in one atomic step; if already `TRUE`, zero rows are modified, safely triggering a duplicate alarm.
 - **Simulated 2FA KYC Voter Registration:** Administrative onboarding portal that enforces relational uniqueness constraints across RFID UIDs, Aadhaar numbers, and EPIC codes, simulating a pre-authorized government voter registry.
@@ -80,7 +185,7 @@ Conventional manual and standalone electronic electoral systems face operational
 
 ---
 
-## 5. Technology Stack
+## 6. Technology Stack
 
 ### Frontend
 - **Markup & Structure:** HTML5 (Semantic Structure)
@@ -112,7 +217,7 @@ Conventional manual and standalone electronic electoral systems face operational
 
 ---
 
-## 6. System Architecture
+## 7. System Architecture
 
 The Vote-Guard system follows a modular edge-to-cloud tiered architecture:
 
@@ -149,7 +254,7 @@ flowchart TD
 
 ---
 
-## 7. Project Workflow
+## 8. Project Workflow
 
 ```mermaid
 sequenceDiagram
@@ -195,7 +300,7 @@ sequenceDiagram
 
 ---
 
-## 8. Project Folder Structure
+## 9. Project Folder Structure
 
 ```text
 VOTE-GUARD/
@@ -208,10 +313,17 @@ VOTE-GUARD/
 ├── auth.js                      # Client-side session tokens & route guards
 ├── operator.js                  # Polling synchronization & audio alerts
 ├── admin.js                     # Admin dashboard metrics & voter table CRUD
+├── demo-mock-engine.js          # Public Demo Mode client-side mock engine & Web Audio synthesizer
 ├── run_backend.py               # Root FastAPI launcher script
 ├── start_vote_guard.bat         # Windows one-click batch launcher
 ├── serial_bridge.py             # USB Serial-to-HTTP gateway bridge
 ├── .gitignore                   # Git exclusion rules for secrets, venv & cache
+│
+├── screenshots/                 # Application screenshots for repository documentation
+│   ├── operator.png             # Polling Booth Operator Terminal interface
+│   ├── admin.png                # Admin Security & 2FA Console interface
+│   ├── login.png                # Authentication & gateway interface
+│   └── signup.png               # Account registration interface
 │
 ├── backend/                     # Python FastAPI Backend
 │   ├── .env.example             # Environment configuration template (Copy to .env)
@@ -247,7 +359,7 @@ VOTE-GUARD/
 
 ---
 
-## 9. Installation and Setup
+## 10. Installation and Setup
 
 ### Prerequisites
 - **Python:** Version 3.10 or higher (Python 3.14 compatible).
@@ -283,7 +395,7 @@ pip install -r backend/requirements.txt
 
 ---
 
-## 10. Backend Configuration
+## 11. Backend Configuration
 
 The backend dynamically reads environment variables for its configuration. A safe template `backend/.env.example` is provided in the repository.
 
@@ -326,7 +438,7 @@ The backend dynamically reads environment variables for its configuration. A saf
 
 ---
 
-## 11. Database Configuration
+## 12. Database Configuration
 
 ### Step 1: Create the MySQL Database
 Log into your MySQL command-line client or MySQL Workbench:
@@ -361,7 +473,7 @@ The server will initialize on `http://0.0.0.0:8000` (accessible via `http://loca
 
 ---
 
-## 12. ESP32 and RC522 Hardware Setup (Optional)
+## 13. ESP32 and RC522 Hardware Setup (Optional)
 
 > **Note:** Physical hardware is **strictly optional** for reviewing, testing, or exploring Vote-Guard. The entire platform includes a software simulation workflow allowing complete demonstration through the web interface.
 
@@ -403,7 +515,7 @@ If you have physical hardware and want to deploy the embedded edge scanner:
 
 ---
 
-## 13. API Overview
+## 14. API Overview
 
 The FastAPI backend provides structured, self-documenting RESTful endpoints accessible at `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc`.
 
@@ -428,21 +540,39 @@ The FastAPI backend provides structured, self-documenting RESTful endpoints acce
 
 ---
 
-## 14. Demo Instructions
+## 15. Demo Instructions
 
-You can demonstrate the complete Vote-Guard verification lifecycle entirely through the web interface without any physical hardware.
+You can demonstrate the complete Vote-Guard verification lifecycle either **online via GitHub Pages** (zero installation) or **locally in Full-Stack Mode**.
 
 > [!NOTE]
 > **Simulated Credentials & Hardware-Free Evaluation:** All demo workflows utilize simulated or local data. The platform does not connect to real government databases, and physical hardware is not required to test the complete verification and duplicate-detection pipeline.
 
-### Web Interface Access Points
+### Option A: Online Interactive Demo (GitHub Pages — Instant)
+
+1. Open the [Live Demo](https://atikansari.github.io/Vote-Guard/) in any web browser.
+2. Click the quick-fill button **🖥️ Operator (operator / operator123)** and click **Sign In**.
+3. On the **Polling Booth Operator Terminal**:
+   - Click **🟢 Tap Valid Voter Card (Aman Patel - 71411605)**: The result card turns Green (`✅ VOTE IS DONE & RECORDED`), the Green LED illuminates, and a confirmation tone plays.
+   - Click the same button again: The result card turns Red (`🚨 DUPLICATE VOTE ATTEMPT BLOCKED`), the Red LED illuminates, two alert buzzes sound, and the fraud attempt is blocked.
+   - Click **🟡 Tap Unregistered Card (99AABBCC)**: The result card turns Yellow (`⚠️ VOTER ID IS NOT REGISTERED`) and warning chirps sound.
+4. Click **Logout**, then click **🛡️ Admin (admin / admin123)** and click **Sign In**.
+5. On the **Admin Security Dashboard**:
+   - Check the **Turnout Stats**: Notice the recorded votes and blocked fraud attempts are automatically synchronized.
+   - Scroll to **Register Voter & Bind 2FA Credentials**: Enter a new RFID UID (e.g. `E4D3C2B1`) with citizen details for Sunita Devi (`Aadhaar: 567890123456`, `EPIC: VGD1000004`) and click **Verify Credentials & Register RFID UID**.
+   - Inspect the **Simulated Audit Activity**: Every scan, duplicate attempt, and registration is chronologically recorded with simulated timestamps in browser storage.
+   - Click **⚠️ Reset Voting Statuses (Demo Mode)**: Resets all votes back to pending for another test cycle while preserving registered voters and KYC credentials.
+
+---
+
+### Option B: Local Full-Stack Demo (FastAPI + MySQL)
+
 With the server running on `http://localhost:8000`:
 - **Portal Entry / Gateway:** `http://localhost:8000/` or `http://localhost:8000/login.html` (or `index.html`)
 - **Booth Operator Terminal:** `http://localhost:8000/operator.html`
 - **Admin Security Dashboard & 2FA Voter Registration:** `http://localhost:8000/admin.html`
 - **Interactive API Docs:** `http://localhost:8000/docs`
 
-### Step-by-Step Software Simulation Demo
+#### Step-by-Step Full-Stack Software Simulation Demo
 
 1. **Log In:**
    - Open `http://localhost:8000/login.html` (or `index.html`).
@@ -486,7 +616,7 @@ With the server running on `http://localhost:8000`:
 
 ---
 
-## 15. Security & Architectural Scope
+## 16. Security & Architectural Scope
 
 - **Credential Isolation:** Real database passwords, secret keys, and local Wi-Fi credentials are strictly isolated into `.env` and `config.h`, which are prevented from being pushed to version control via `.gitignore`.
 - **Atomic Database Write-Locks:** Concurrency protection is achieved at the database engine level. Using a conditional update (`UPDATE voters SET has_voted = TRUE WHERE rfid_uid = :uid AND has_voted = FALSE`), MySQL InnoDB row-level write-locks ensure that only the first incoming request can modify the row, blocking concurrent multi-booth race conditions (TOCTOU).
@@ -499,10 +629,11 @@ With the server running on `http://localhost:8000`:
 
 ---
 
-## 16. Current Project Status
+## 17. Current Project Status
 
 | Feature / Subsystem | Implementation Status | Technical Verification Notes |
 | :--- | :---: | :--- |
+| **Public Demo Mode (GitHub Pages)** | **Fully Implemented** | Client-side mock engine (`demo-mock-engine.js`), hardware simulator dock & sound cues active. |
 | **FastAPI REST Backend** | **Fully Implemented** | Modular routing, CORS, and health checks verified in `backend/app/main.py`. |
 | **MySQL Relational Schema** | **Fully Implemented** | Normalized models for voters, credentials, users, and logs verified in `backend/app/models.py`. |
 | **Exactly-Once Voting Invariant** | **Fully Implemented** | Atomic conditional update verified via `backend/test_logic.py`. |
@@ -516,7 +647,7 @@ With the server running on `http://localhost:8000`:
 
 ---
 
-## 17. Future Enhancements
+## 18. Future Enhancements
 
 The following features represent conceptual architectural enhancements planned for future research iterations:
 
@@ -528,7 +659,7 @@ The following features represent conceptual architectural enhancements planned f
 
 ---
 
-## 18. Contributors & Project Credits
+## 19. Contributors & Project Credits
 
 This project was engineered and developed as a Problem Based Learning (PBL-I) project under the Department of Computer Science and Engineering, College of Technology, Silver Oak University:
 
