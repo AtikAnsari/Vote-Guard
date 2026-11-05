@@ -1,0 +1,2473 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOTE-GUARD â€” System Design &amp; Technical Documentation</title>
+  <style>
+    /* CSS Variables & Executive Palette */
+    :root {
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --text: #1e293b;
+      --text-muted: #475569;
+      --text-subtle: #64748b;
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      
+      /* Badges */
+      --badge-impl-bg: #dcfce7;
+      --badge-impl-text: #166534;
+      --badge-impl-border: #86efac;
+      
+      --badge-plan-bg: #dbeafe;
+      --badge-plan-text: #1e40af;
+      --badge-plan-border: #93c5fd;
+      
+      --badge-fut-bg: #ede9fe;
+      --badge-fut-text: #5b21b6;
+      --badge-fut-border: #c4b5fd;
+      
+      --badge-prop-bg: #fef3c7;
+      --badge-prop-text: #92400e;
+      --badge-prop-border: #fcd34d;
+      
+      --badge-tbd-bg: #f1f5f9;
+      --badge-tbd-text: #475569;
+      --badge-tbd-border: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: var(--bg);
+      padding: 0;
+    }
+
+    .document-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 50px;
+      background: #ffffff;
+    }
+
+    /* Cover Page */
+    .cover-page {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 60px 40px 40px 40px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+      margin-bottom: 50px;
+      page-break-after: always;
+    }
+
+    .cover-top {
+      border-top: 8px solid var(--accent);
+      padding-top: 40px;
+    }
+
+    .cover-kicker {
+      font-size: 13pt;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .cover-title {
+      font-size: 32pt;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.15;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .cover-subtitle {
+      font-size: 16pt;
+      font-weight: 500;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 30px;
+    }
+
+    .cover-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    .cover-meta-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px 30px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-label {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-value {
+      font-size: 11pt;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 2px;
+    }
+
+    .cover-notice {
+      background: #eff6ff;
+      border-left: 4px solid var(--accent);
+      padding: 16px 20px;
+      border-radius: 4px;
+      font-size: 10pt;
+      color: #1e3a8a;
+      line-height: 1.5;
+    }
+
+    /* Typography & Hierarchy */
+    h1.doc-title {
+      display: none; /* Rendered on cover */
+    }
+
+    h2.section-heading {
+      font-size: 18pt;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 45px;
+      margin-bottom: 18px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: -0.3px;
+    }
+
+    h3.sub-heading {
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-top: 28px;
+      margin-bottom: 12px;
+    }
+
+    h4.sub-sub-heading {
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    p.doc-paragraph {
+      margin-bottom: 14px;
+      color: var(--text);
+      text-align: justify;
+    }
+
+    hr.doc-divider {
+      border: 0;
+      height: 1px;
+      background: var(--border);
+      margin: 35px 0;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-size: 8.5pt;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .badge-implemented {
+      background-color: var(--badge-impl-bg);
+      color: var(--badge-impl-text);
+      border: 1px solid var(--badge-impl-border);
+    }
+
+    .badge-planned {
+      background-color: var(--badge-plan-bg);
+      color: var(--badge-plan-text);
+      border: 1px solid var(--badge-plan-border);
+    }
+
+    .badge-future {
+      background-color: var(--badge-fut-bg);
+      color: var(--badge-fut-text);
+      border: 1px solid var(--badge-fut-border);
+    }
+
+    .badge-proposed {
+      background-color: var(--badge-prop-bg);
+      color: var(--badge-prop-text);
+      border: 1px solid var(--badge-prop-border);
+    }
+
+    .badge-tbd {
+      background-color: var(--badge-tbd-bg);
+      color: var(--badge-tbd-text);
+      border: 1px solid var(--badge-tbd-border);
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 22px 0;
+      border-left: 5px solid;
+    }
+
+    .callout-status {
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #1e3a8a;
+    }
+
+    .callout-status h4 {
+      color: #1e40af;
+      margin-bottom: 8px;
+    }
+
+    .callout-warning {
+      background: #fef2f2;
+      border-color: #dc2626;
+      color: #991b1b;
+    }
+
+    .callout-warning h4 {
+      color: #b91c1c;
+      margin-bottom: 8px;
+    }
+
+    .callout-note {
+      background: #f8fafc;
+      border-color: #64748b;
+      color: #334155;
+    }
+
+    .callout-note h4 {
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .callout-tip {
+      background: #f0fdf4;
+      border-color: #16a34a;
+      color: #14532d;
+    }
+
+    /* Lists */
+    ul.doc-list, ol.doc-list {
+      margin: 12px 0 16px 24px;
+      color: var(--text);
+    }
+
+    ul.doc-list li, ol.doc-list li {
+      margin-bottom: 6px;
+      padding-left: 4px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      margin: 24px 0;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    table.doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      text-align: left;
+    }
+
+    table.doc-table th {
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      letter-spacing: 0.3px;
+    }
+
+    table.doc-table th:last-child {
+      border-right: none;
+    }
+
+    table.doc-table td {
+      padding: 9px 14px;
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    table.doc-table td:last-child {
+      border-right: none;
+    }
+
+    table.doc-table tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    table.doc-table tbody tr:hover {
+      background: #f1f5f9;
+    }
+
+    /* Code Blocks */
+    pre.code-block, pre.diagram-code {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9pt;
+      line-height: 1.45;
+      overflow-x: auto;
+      margin: 18px 0;
+      border: 1px solid #1e293b;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9.5pt;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+    }
+
+    /* Diagrams */
+    .diagram-container {
+      margin: 32px 0;
+      border: 1px solid var(--border-dark);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .diagram-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .diagram-badge {
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 8pt;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .diagram-title {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .diagram-tag {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .diagram-svg-wrapper {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #ffffff;
+      overflow-x: auto;
+    }
+
+    .diagram-svg-wrapper svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .diagram-caption {
+      background: #f8fafc;
+      padding: 10px 18px;
+      border-top: 1px solid var(--border);
+      font-size: 9pt;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* TOC links */
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Print Optimizations */
+    @media print {
+      body {
+        font-size: 9.5pt;
+        line-height: 1.45;
+        color: #000000;
+        background: #ffffff;
+      }
+
+      .document-container {
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .cover-page {
+        min-height: 95vh;
+        border: none;
+        padding: 40px 20px;
+        page-break-after: always;
+      }
+
+      .section-break {
+        page-break-before: always;
+      }
+
+      .page-break-inside-avoid {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      h2, h3 {
+        page-break-after: avoid;
+      }
+
+      table.doc-table th {
+        background: #1e293b !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .diagram-container {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: 1px solid #cbd5e1;
+        box-shadow: none;
+      }
+
+      .callout {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .badge {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      @page {
+        size: A4;
+        margin: 15mm 15mm 15mm 15mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="document-container">
+    <!-- Executive Cover Page -->
+    <div class="cover-page">
+      <div class="cover-top">
+        <div class="cover-kicker">Technical Specification &amp; Architecture Document</div>
+        <div class="cover-title">VOTE-GUARD</div>
+        <div class="cover-subtitle">System Design &amp; Technical Documentation<br><span style="font-size: 13pt; color: #64748b;">Centralized Voter Verification &amp; Duplicate Voting Attempt Prevention System</span></div>
+        
+        <div class="cover-badges">
+          <span class="badge badge-implemented">[IMPLEMENTED: Frontend Prototype]</span>
+          <span class="badge badge-planned">[PLANNED / NEW: Connected System]</span>
+          <span class="badge badge-proposed">[PROPOSED: Database Schema]</span>
+          <span class="badge badge-future">[FUTURE / OPTIONAL: Physical IoT/RFID]</span>
+          <span class="badge badge-tbd">[TBD: Backend &amp; Auth Decisions]</span>
+        </div>
+
+        <div class="cover-meta-card">
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Document Version</span>
+              <span class="meta-value">1.0.0 (Master Release)</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Publication Date</span>
+              <span class="meta-value">October 2026</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Project Status</span>
+              <span class="meta-value">Client-Side Verification Prototype</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Target Architecture</span>
+              <span class="meta-value">Proposed Centralized Verification Backend</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Author</span>
+              <span class="meta-value">VOTE-GUARD Engineering Team</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Classification</span>
+              <span class="meta-value">System Engineering Specification</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-notice">
+        <strong>Mandatory Status Notice:</strong> VOTE-GUARD is currently a client-side voting security and voter verification prototype. It demonstrates voter eligibility checking and duplicate attempt blocking within a browser-based environment using local storage. It does not perform official government election operations or electronic ballot counting.
+      </div>
+    </div>
+
+    <!-- Main Content Body -->
+    <div class="main-content">
+<h1 class='doc-title'>VOTE-GUARD — System Design &amp; Technical Documentation</h1>
+<h2 id='centralized-voter-verification-duplicate-voting-attempt-prevention-system' class='section-heading section-break'>Centralized Voter Verification &amp; Duplicate Voting Attempt Prevention System</h2>
+<div class='callout callout-note page-break-inside-avoid'><p><strong>Document Version:</strong> 1.0.0</p>
+<p><strong>Classification:</strong> Project Engineering Specification &amp; Academic Documentation</p>
+<p><strong>Status:</strong> Current Client-Side Prototype with Proposed Backend &amp; Database Architecture</p>
+<p><strong>Author:</strong> VOTE-GUARD Engineering Team</p>
+<p><strong>Date:</strong> October 2026</p>
+</div>
+<hr class='doc-divider'>
+<div class='callout callout-status page-break-inside-avoid'><h4 class='callout-heading'>⚠️ Official Project Status &amp; Terminology Statement</h4>
+<p><strong>VOTE-GUARD is currently a client-side voting security and voter verification prototype.</strong></p>
+<p>It simulates voter verification and voting status using browser-based client storage (<code>localStorage</code>) for demonstration and testing purposes. It <strong>does not</strong> perform real electronic voting, nor is it an official government election platform in its current state.</p>
+<li><strong>Current Prototype:</strong> A browser-based demonstration simulating voter verification and voting-status management.</li>
+<li><strong>Future Connected System:</strong> A centralized voter verification and duplicate-attempt prevention system deployed across authenticated polling stations.</li>
+<li><strong>Classification Standard:</strong></li>
+<li><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code> – Currently working in the existing HTML5/CSS3/JavaScript prototype.</li>
+<li><code><span class="badge badge-planned">[PLANNED / NEW]</span></code> – Features intended for the upcoming connected system.</li>
+<li><code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code> – Possible long-term extensions (hardware RFID sensors, biometrics, multi-booth synchronization).</li>
+<li><code><span class="badge badge-proposed">[PROPOSED]</span></code> – Conceptual database, domain, and architectural designs that are not yet implemented or finalized.</li>
+<li><code><span class="badge badge-tbd">[TBD]</span></code> – Technology or architecture decisions that the project team has not yet finalized.</li>
+</div>
+<hr class='doc-divider'>
+<h2 id='table-of-contents' class='section-heading section-break'>TABLE OF CONTENTS</h2>
+<ol class='doc-list'>
+<li><a href="#1-introduction">Introduction</a></li>
+<li><a href="#2-problem-statement">Problem Statement</a></li>
+<li><a href="#3-objectives">Objectives</a></li>
+<li><a href="#4-scope">Scope</a></li>
+<li><a href="#5-existing-system">Existing System</a></li>
+<li><a href="#6-existing-system-limitations">Existing System Limitations</a></li>
+<li><a href="#7-proposed-system">Proposed System</a></li>
+<li><a href="#8-functional-requirements">Functional Requirements</a></li>
+<li><a href="#9-non-functional-requirements">Non-Functional Requirements</a></li>
+<li><a href="#10-system-workflow">System Workflow</a></li>
+<li><a href="#11-use-case-model--diagram">Use Case Model &amp; Diagram</a></li>
+<li><a href="#12-data-flow-diagrams-dfd-level-0--level-1">Data Flow Diagrams (DFD Level 0 &amp; Level 1)</a></li>
+<li><a href="#13-class-diagram">Class Diagram</a></li>
+<li><a href="#14-entity-relationship-er-diagram-proposed">Entity-Relationship (ER) Diagram <span class="badge badge-proposed">[PROPOSED]</span></a></li>
+<li><a href="#15-sequence-diagrams">Sequence Diagrams</a></li>
+<li><a href="#16-activity-diagram">Activity Diagram</a></li>
+<li><a href="#17-system-architecture">System Architecture</a></li>
+<li><a href="#18-database-design-proposed">Database Design <span class="badge badge-proposed">[PROPOSED]</span></a></li>
+<li><a href="#19-module-design">Module Design</a></li>
+<li><a href="#20-future-iot--rfid-integration-future--optional">Future IoT / RFID Integration <span class="badge badge-future">[FUTURE / OPTIONAL]</span></a></li>
+<li><a href="#21-security-requirements">Security Requirements</a></li>
+<li><a href="#22-technology-decision-register">Technology Decision Register</a></li>
+<li><a href="#23-current-vs-planned-vs-future-feature-matrix">Current vs. Planned vs. Future Feature Matrix</a></li>
+<li><a href="#24-limitations">Limitations</a></li>
+<li><a href="#25-future-scope">Future Scope</a></li>
+<li><a href="#26-conclusion">Conclusion</a></li>
+<li><a href="#27-references">References</a></li>
+</ol>
+<hr class='doc-divider'>
+<h2 id='1-introduction' class='section-heading section-break'>1. INTRODUCTION</h2>
+<h3 id='11-project-overview' class='sub-heading'>1.1 Project Overview</h3>
+<p class='doc-paragraph'><strong>VOTE-GUARD is currently a client-side voting security and voter verification prototype.</strong> The application was engineered to address one of the most critical vulnerabilities in modern electoral processes: the detection and immediate mitigation of <strong>duplicate voting attempts</strong>. By providing real-time accreditation checks against registered credentials, VOTE-GUARD enables polling supervisors to verify whether a credential has already been marked as voted, inspect verification activity trails, and monitor station activity metrics.</p>
+<h3 id='12-background-motivation' class='sub-heading'>1.2 Background &amp; Motivation</h3>
+<p class='doc-paragraph'>In paper-based accreditation procedures and disconnected voting kiosks, verifying whether an elector has already voted across disparate registration books or multiple booths is prone to human oversight, verification delays, and identity impersonation. VOTE-GUARD was conceptualized as a modern digital verification gatekeeper that sits between the voter intake line and the voting booth, ensuring that only verified, unvoted electors proceed.</p>
+<h3 id='13-terminology-definitions' class='sub-heading'>1.3 Terminology &amp; Definitions</h3>
+<p class='doc-paragraph'>To maintain academic rigor and avoid confusion regarding real-world electronic voting machines (EVMs), the following distinctions are established:</p>
+<ul class='doc-list'>
+<li><strong>Voter Verification:</strong> The algorithmic lookup and validation of an elector&#39;s registered credential (RFID tag UID or alphanumeric Voter ID).</li>
+<li><strong>Voting Status:</strong> A binary accreditation flag indicating whether the citizen is currently marked as <code>&quot;Not Voted&quot;</code> or <code>&quot;Voted&quot;</code>.</li>
+<li><strong>Duplicate Voting Attempt Detection:</strong> The real-time interception of a credential whose status is already recorded as <code>&quot;Voted&quot;</code>, triggering security alerts and incrementing fraud metrics.</li>
+<li><strong>Simulated Vote / Verification Record:</strong> The demonstration state transition recorded within the system indicating that verification occurred successfully.</li>
+<li><strong>Real Electronic Voting System:</strong> An end-to-end statutory voting platform handling secret ballots, vote tallying, and certified election results (distinct from and outside the scope of this project).</li>
+</ul>
+<h3 id='14-purpose-and-target-audience' class='sub-heading'>1.4 Purpose and Target Audience</h3>
+<p class='doc-paragraph'>This document serves as the comprehensive engineering specification for VOTE-GUARD. It is prepared for academic faculty evaluation, software engineering project reviews, and as the authoritative technical reference for the future transition from the client-side prototype to a full client-server connected system.</p>
+<hr class='doc-divider'>
+<h2 id='2-problem-statement' class='section-heading section-break'>2. PROBLEM STATEMENT</h2>
+<h3 id='21-challenges-in-manual-voter-accreditation' class='sub-heading'>2.1 Challenges in Manual Voter Accreditation</h3>
+<p class='doc-paragraph'>Traditional manual voter accreditation relies heavily on physical voter rolls printed on paper. Election officers manually cross out names or verify indelibly inked fingers. This workflow is subject to:</p>
+<ol class='doc-list'>
+<li><strong>Human Fatigue &amp; Oversight:</strong> Manual verification in high-volume queues leads to clerical errors and identity mix-ups.</li>
+<li><strong>Slow Verification Latency:</strong> Searching alphabetical indexes manually causes long queues and voter disenfranchisement.</li>
+<li><strong>Lack of Instant Inter-Desk Communication:</strong> In multi-desk polling stations, an elector crossing between desks cannot be instantly verified without a synchronized digital ledger.</li>
+</ol>
+<h3 id='22-the-risk-of-duplicate-voting-attempts' class='sub-heading'>2.2 The Risk of Duplicate Voting Attempts</h3>
+<p class='doc-paragraph'>Duplicate voting occurs when an elector attempts to cast more than one ballot using cloned cards, stolen IDs, or multiple registrations across different booths. Without instant verification, duplicate attempts may go undetected until post-election audits, compromising the legitimacy of the electoral process.</p>
+<h3 id='23-single-station-data-silos' class='sub-heading'>2.3 Single-Station Data Silos</h3>
+<p class='doc-paragraph'>Existing standalone kiosk prototypes store operational data locally on individual devices. When multiple stations operate without a shared backend, transactions on Station A remain completely invisible to Station B, creating vulnerabilities during parallel polling operations.</p>
+<hr class='doc-divider'>
+<h2 id='3-objectives' class='section-heading section-break'>3. OBJECTIVES</h2>
+<h3 id='31-primary-verification-objectives' class='sub-heading'>3.1 Primary Verification Objectives</h3>
+<ul class='doc-list'>
+<li>Implement instant algorithmic verification of voter credentials (RFID UID / Voter ID). <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></li>
+<li>Provide unambiguous visual feedback: Valid voter acceptance vs. duplicate attempt interception. <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></li>
+<li>Maintain a real-time count of recorded voter credentials within the active session. <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></li>
+</ul>
+<h3 id='32-security-fraud-prevention-goals' class='sub-heading'>3.2 Security &amp; Fraud Prevention Goals</h3>
+<ul class='doc-list'>
+<li>Intercept every duplicate voting attempt and trigger high-visibility alerts. <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></li>
+<li>Increment and persist an audit counter of unauthorized duplicate attempts. <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></li>
+<li>Log tamper-evident audit records containing voter identification, timestamp, and verification outcome. <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></li>
+</ul>
+<h3 id='33-prototype-demonstration-goals-vs-production-objectives' class='sub-heading'>3.3 Prototype Demonstration Goals vs. Production Objectives</h3>
+<ul class='doc-list'>
+<li><strong>Prototype Goal:</strong> Provide a responsive, zero-installation browser dashboard using <code>localStorage</code> to validate the verification UX and fraud alerting model. <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></li>
+<li><strong>Production Objective:</strong> Transition to a centralized, multi-tier client-server architecture with persistent database storage, atomic concurrency locks, and hardware sensor ingestion. <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='4-scope' class='section-heading section-break'>4. SCOPE</h2>
+<h3 id='41-in-scope-current-client-side-prototype-implemented' class='sub-heading'>4.1 In-Scope (Current Client-Side Prototype) <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></h3>
+<ul class='doc-list'>
+<li>Single-page responsive web dashboard (<code>index.html</code>, <code>style.css</code>, <code>script.js</code>).</li>
+<li>Manual credential entry simulating RFID tag scanning and Voter ID input.</li>
+<li>In-memory/localStorage registry lookup supporting case-insensitive queries.</li>
+<li>Real-time metric calculations (Total, Recorded, Pending, Fraud Attempts) isolated to the local browser session.</li>
+<li>Animated alert banner for duplicate voting attempts (<code>@keyframes duplicateAlertShake</code>).</li>
+<li>Live audit feed showing the latest 10 verification transactions.</li>
+<li>Multi-theme switcher supporting Light mode, Dark mode, and Windows System theme sync.</li>
+<li>Demo reset facility restoring factory mock data.</li>
+</ul>
+<h3 id='42-in-scope-planned-connected-system-planned-new' class='sub-heading'>4.2 In-Scope (Planned Connected System) <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></h3>
+<ul class='doc-list'>
+<li>Centralized backend server and database replacing browser <code>localStorage</code>.</li>
+<li>Polling Officer authentication and station authorization.</li>
+<li>Atomic verification transactions preventing race conditions across multiple booths.</li>
+<li>Persistent, tamper-evident audit storage.</li>
+</ul>
+<h3 id='43-out-of-scope-official-election-machinery' class='sub-heading'>4.3 Out-of-Scope (Official Election Machinery)</h3>
+<ul class='doc-list'>
+<li>Official statutory vote casting, candidate ballot creation, and electoral vote counting.</li>
+<li>Cryptographic voter anonymity layers (e.g., zero-knowledge proofs or homomorphic encryption for secret ballots).</li>
+<li>National-scale voter database synchronization.</li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='5-existing-system' class='section-heading section-break'>5. EXISTING SYSTEM</h2>
+<h3 id='51-overview-of-current-prototype' class='sub-heading'>5.1 Overview of Current Prototype</h3>
+<p class='doc-paragraph'>The current VOTE-GUARD system is a lightweight, zero-dependency client-side prototype. It runs directly within modern web browsers and executes business logic entirely in client-side JavaScript.</p>
+<h3 id='52-user-interface-structure' class='sub-heading'>5.2 User Interface Structure</h3>
+<p class='doc-paragraph'>The dashboard interface is structured into four primary visual zones:</p>
+<ol class='doc-list'>
+<li><strong>Sticky Navigation Bar (<code>.navbar</code>):</strong> Displays the project brand (<code>🛡️ VOTE-GUARD</code>), a borderless theme selector dropdown, the static role indicator (<code>Admin</code>), and a demo Logout button.</li>
+<li><strong>Page Heading &amp; Status:</strong> Contains the page title, description, and an active pulse indicator (<code>System Online</code>).</li>
+<li><strong>Stat Cards Grid (<code>.stats-container</code>):</strong> Four responsive metric cards:</li>
+</ol>
+<ul class='doc-list'>
+<li><strong>Total Voters (<code>#totalVoters</code>):</strong> Total voters in the active registry.</li>
+<li><strong>Votes Recorded (<code>#votesRecorded</code>):</strong> Total verified electors marked as <code>&quot;Voted&quot;</code>.</li>
+<li><strong>Pending Votes (<code>#pendingVotes</code>):</strong> Calculated difference (<code>Total - Recorded</code>).</li>
+<li><strong>Fraud Attempts (<code>#fraudAttempts</code>):</strong> Cumulative count of intercepted duplicate attempts.</li>
+</ul>
+<ol class='doc-list'>
+<li><strong>Main Verification Grid (<code>.main-grid</code>):</strong></li>
+</ol>
+<ul class='doc-list'>
+<li><strong>Voter Verification Card:</strong> Input field (<code>#voterInput</code>), verification button (<code>#verifyBtn</code>), RFID badge, and dynamic notification container (<code>#verificationMessage</code>).</li>
+<li><strong>Recorded Voters Card:</strong> Real-time count badge (<code>#recordedCount</code>) and vertical list displaying RFID tags of electors who have already verified.</li>
+</ul>
+<ol class='doc-list'>
+<li><strong>Recent Verification Activity Section (<code>.recent-section</code>):</strong> A responsive audit table displaying the last 10 verification transactions with color-coded status badges, alongside a &quot;Reset Demo&quot; button.</li>
+</ol>
+<h3 id='53-client-side-storage-data-simulation-engine' class='sub-heading'>5.3 Client-Side Storage &amp; Data Simulation Engine</h3>
+<p class='doc-paragraph'>Data persistence is managed via the browser&#39;s <code>localStorage</code> API:</p>
+<ul class='doc-list'>
+<li><code>voteGuardVoters</code>: Serialized JSON array of voter objects initialized from a seed list of 6 electors.</li>
+<li><code>voteGuardFraudAttempts</code>: Integer counter tracking blocked duplicate attempts.</li>
+<li><code>voteGuardActivities</code>: Serialized JSON array containing up to 10 activity log entries.</li>
+<li><code>voteGuardTheme</code>: String indicating selected theme (<code>&quot;light&quot;</code>, <code>&quot;dark&quot;</code>, or <code>&quot;system&quot;</code>).</li>
+</ul>
+<h3 id='54-theme-controller' class='sub-heading'>5.4 Theme Controller</h3>
+<p class='doc-paragraph'>The interface includes a theme controller:</p>
+<ul class='doc-list'>
+<li>Native light mode with clean contrast (<code>#f5f8fc</code> background, <code>#17233c</code> text).</li>
+<li>Deep dark mode (<code>[data-theme=&quot;dark&quot;]</code>) using navy/slate tones (<code>#0d1527</code> background, <code>#131f37</code> cards).</li>
+<li>Real-time Windows system theme integration via <code>window.matchMedia(&quot;(prefers-color-scheme: dark)&quot;)</code>.</li>
+<li>Flash-of-unstyled-content (FOUC) prevention via an inline initialization script in <code>&lt;head&gt;</code>.</li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='6-existing-system-limitations' class='section-heading section-break'>6. EXISTING SYSTEM LIMITATIONS</h2>
+<h3 id='61-absence-of-server-side-enforcement' class='sub-heading'>6.1 Absence of Server-Side Enforcement</h3>
+<p class='doc-paragraph'>The current prototype contains no backend server. All lookup and status-updating algorithms execute client-side in <code>script.js</code>. Any user can bypass or manipulate the logic via browser developer tools.</p>
+<h3 id='62-client-side-storage-vulnerabilities' class='sub-heading'>6.2 Client-Side Storage Vulnerabilities</h3>
+<p class='doc-paragraph'><code>localStorage</code> stores unencrypted plaintext data accessible to anyone with physical access to the browser console. A user can clear or modify voter statuses and fraud counters with a single JavaScript command.</p>
+<h3 id='63-single-station-isolation' class='sub-heading'>6.3 Single-Station Isolation</h3>
+<p class='doc-paragraph'>Metrics and verification statuses are strictly real-time within the single browser tab. There is <strong>no synchronization</strong> across multiple computers, polling stations, or browsers. If Station A verifies an elector, Station B has no knowledge of it.</p>
+<h3 id='64-lack-of-user-authentication-session-security' class='sub-heading'>6.4 Lack of User Authentication &amp; Session Security</h3>
+<p class='doc-paragraph'>The &quot;Admin&quot; label in the navigation bar is purely static visual text. There is no login screen, no password verification, no session token, and no cryptographic authentication.</p>
+<h3 id='65-manual-rfidvoter-id-emulation' class='sub-heading'>6.5 Manual RFID/Voter ID Emulation</h3>
+<p class='doc-paragraph'>The system requires an operator to manually type or paste an RFID UID or Voter ID into an input box. There is currently no hardware interface connecting physical RFID scanning hardware to the application.</p>
+<hr class='doc-divider'>
+<h2 id='7-proposed-system' class='section-heading section-break'>7. PROPOSED SYSTEM</h2>
+<h3 id='71-architectural-vision-centralized-voter-verification-duplicate-attempt-prevention-system' class='sub-heading'>7.1 Architectural Vision: Centralized Voter Verification &amp; Duplicate-Attempt Prevention System</h3>
+<p class='doc-paragraph'>The proposed system transitions VOTE-GUARD into a secure, multi-tier client-server architecture. The existing HTML5/CSS3 frontend is retained as the presentation interface, while state management, verification logic, and audit logging are transferred to a secure server.</p>
+<h3 id='72-centralized-registry-atomic-status-updates' class='sub-heading'>7.2 Centralized Registry &amp; Atomic Status Updates</h3>
+<p class='doc-paragraph'>When an RFID credential is presented at any polling booth, the request is transmitted to a centralized API. The backend executes an atomic transaction (e.g., row-level locking or atomic compare-and-swap) to verify that <code>status == &quot;Not Voted&quot;</code>, immediately marking it as <code>&quot;Voted&quot;</code> before releasing the lock. This prevents race conditions where two booths attempt to verify the same credential simultaneously.</p>
+<h3 id='73-multi-station-consistency-persistent-audit-logging' class='sub-heading'>7.3 Multi-Station Consistency &amp; Persistent Audit Logging</h3>
+<p class='doc-paragraph'>All connected polling stations will share a unified database. A duplicate attempt at Booth 2 for a voter verified 5 seconds earlier at Booth 1 will be intercepted and flagged across the network.</p>
+<hr class='doc-divider'>
+<h2 id='8-functional-requirements' class='section-heading section-break'>8. FUNCTIONAL REQUIREMENTS</h2>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Identifier</th>
+<th>Requirement Description</th>
+<th>Classification</th>
+<th>Prototype Behavior vs. Target Scope</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>FR-01</strong></td>
+<td>Input credential via text input (RFID or Voter ID)</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Manually entered in <code>#voterInput</code> and triggered via Button/Enter.</td>
+</tr>
+<tr>
+<td><strong>FR-02</strong></td>
+<td>Automatic string sanitization &amp; normalization</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Whitespace trimmed, uppercase converted in client script.</td>
+</tr>
+<tr>
+<td><strong>FR-03</strong></td>
+<td>Query voter registry by RFID or Voter ID</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Case-insensitive array search over local dataset.</td>
+</tr>
+<tr>
+<td><strong>FR-04</strong></td>
+<td>Detection and interception of duplicate voting attempts</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Checks if <code>status === &quot;Voted&quot;</code>, blocks verification, triggers alert.</td>
+</tr>
+<tr>
+<td><strong>FR-05</strong></td>
+<td>High-visibility animated duplicate attempt alert</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Renders <code>.duplicate-alert</code> box with red border and shake animation.</td>
+</tr>
+<tr>
+<td><strong>FR-06</strong></td>
+<td>Browser-isolated real-time Total Voters metric</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Live count calculated from local array length in active browser.</td>
+</tr>
+<tr>
+<td><strong>FR-07</strong></td>
+<td>Browser-isolated real-time Votes Recorded metric</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Live count of voters marked &quot;Voted&quot; in active browser.</td>
+</tr>
+<tr>
+<td><strong>FR-08</strong></td>
+<td>Browser-isolated real-time Pending Votes metric</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Dynamically calculated (<code>Total - Recorded</code>) in active browser.</td>
+</tr>
+<tr>
+<td><strong>FR-09</strong></td>
+<td>Browser-isolated real-time Fraud Attempts counter</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Cumulative counter incremented on duplicate attempts.</td>
+</tr>
+<tr>
+<td><strong>FR-10</strong></td>
+<td>Recorded voters RFID feed</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Dynamic list of RFID tags rendered in <code>#recordedVotersTable</code>.</td>
+</tr>
+<tr>
+<td><strong>FR-11</strong></td>
+<td>Tabular verification activity log (latest 10)</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Audit table showing ID, Name, RFID, Status, Result, and Time.</td>
+</tr>
+<tr>
+<td><strong>FR-12</strong></td>
+<td>Polling Officer authentication &amp; login</td>
+<td><code><span class="badge badge-planned">[PLANNED / NEW]</span></code></td>
+<td>Currently static text; will authenticate against server credentials.</td>
+</tr>
+<tr>
+<td><strong>FR-13</strong></td>
+<td>Session token validation &amp; automatic expiry</td>
+<td><code><span class="badge badge-planned">[PLANNED / NEW]</span></code></td>
+<td>Server-validated session integrity for polling booth operators.</td>
+</tr>
+<tr>
+<td><strong>FR-14</strong></td>
+<td>Demo state reset capability</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Resets mock voter statuses, fraud count, and logs to baseline.</td>
+</tr>
+<tr>
+<td><strong>FR-15</strong></td>
+<td>Multi-theme switching (Light, Dark, Windows System)</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Borderless navbar dropdown with <code>prefers-color-scheme</code> listener.</td>
+</tr>
+<tr>
+<td><strong>FR-16</strong></td>
+<td>Fully responsive presentation layout</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>CSS Grid and Flexbox adapting across 320px–1920px viewports.</td>
+</tr>
+</tbody></table></div>
+
+<hr class='doc-divider'>
+<h2 id='9-non-functional-requirements' class='section-heading section-break'>9. NON-FUNCTIONAL REQUIREMENTS</h2>
+<ul class='doc-list'>
+<li><strong>NFR-01: Data Integrity &amp; Concurrency Controls <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  The verification of a credential must be atomic. No concurrent verification of the same RFID tag across separate stations may both succeed.</p>
+<ul class='doc-list'>
+<li><strong>NFR-02: Verification Turnaround Latency <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  In the current client-side prototype, verification latency is sub-10ms. In the proposed connected system, the API response must complete in under 200ms under standard local network conditions.</p>
+<ul class='doc-list'>
+<li><strong>NFR-03: Visual Clarity &amp; Alert Prominence <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  Duplicate voting alerts must be immediately discernible under varying lighting conditions, utilizing distinct high-contrast colors, icons, and CSS animations.</p>
+<ul class='doc-list'>
+<li><strong>NFR-04: Cross-Browser Compatibility <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  The interface must function identically across all modern standards-compliant web browsers (Chromium/Chrome, Edge, Firefox, Safari).</p>
+<ul class='doc-list'>
+<li><strong>NFR-05: Fault Tolerance &amp; Graceful Fallback <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  If network connectivity to the central server is interrupted, the client dashboard must indicate an offline warning state and prevent unverified admissions.</p>
+<ul class='doc-list'>
+<li><strong>NFR-06: Zero Flash of Unstyled Content (FOUC) <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  Theme selection must apply before the initial page paint to prevent white flash when opening dark mode.</p>
+<hr class='doc-divider'>
+<h2 id='10-system-workflow' class='section-heading section-break'>10. SYSTEM WORKFLOW</h2>
+<h3 id='101-system-lifecycle' class='sub-heading'>10.1 System Lifecycle</h3>
+<ol class='doc-list'>
+<li><strong>Initialization:</strong> The browser loads <code>index.html</code>. The early theme script reads <code>voteGuardTheme</code> from <code>localStorage</code> and applies the theme attribute to <code>&lt;html&gt;</code>.</li>
+<li><strong>Data Hydration:</strong> <code>script.js</code> retrieves registry data, fraud metrics, and activity logs from <code>localStorage</code>. If empty, it seeds mock defaults (<code>defaultVoters</code>).</li>
+<li><strong>Dashboard Render:</strong> <code>updateDashboard()</code> recalculates counts, renders metric cards, populates <code>#recordedVotersTable</code>, and renders <code>#activityTable</code>.</li>
+<li><strong>Event Listening:</strong> Event listeners attach to <code>#verifyBtn</code>, <code>#voterInput</code> (Enter key), <code>#resetBtn</code>, and <code>#themeSelect</code>.</li>
+<li><strong>Verification Execution:</strong> When an input is entered, <code>verifyVoter()</code> executes the decision tree.</li>
+</ol>
+<h3 id='102-state-machine' class='sub-heading'>10.2 State Machine</h3>
+<p class='doc-paragraph'>The elector verification lifecycle follows an irreversible one-way transition per election:</p>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 01</span>
+      <span class="diagram-title">Elector Verification Lifecycle State Machine</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 205" width="100%" height="205">
+  <defs>
+    <marker id="smArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="smArrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="smArrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Start Circle -->
+  <circle cx="50" cy="90" r="14" fill="#0f172a"/>
+  <line x1="64" y1="90" x2="115" y2="90" stroke="#334155" stroke-width="2" marker-end="url(#smArr)"/>
+  <text x="90" y="78" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Register</text>
+
+  <!-- State 1: NotVoted -->
+  <rect x="120" y="60" width="150" height="60" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="195" y="86" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">NotVoted</text>
+  <text x="195" y="104" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3b82f6" text-anchor="middle">has_voted = FALSE</text>
+
+  <!-- Transition: Valid Verification Processed -->
+  <line x1="270" y1="90" x2="385" y2="90" stroke="#16a34a" stroke-width="2" marker-end="url(#smArrGreen)"/>
+  <text x="328" y="75" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#15803d" text-anchor="middle">Valid Verification</text>
+  <text x="328" y="86" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#166534" text-anchor="middle">(Ballot Issued)</text>
+
+  <!-- State 2: Voted -->
+  <rect x="390" y="60" width="150" height="60" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="465" y="86" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">Voted</text>
+  <text x="465" y="104" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#15803d" text-anchor="middle">has_voted = TRUE</text>
+
+  <!-- Transition to DuplicateAttempt -->
+  <path d="M 490 60 C 520 20, 610 20, 640 60" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#smArrRed)"/>
+  <text x="565" y="26" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#b91c1c" text-anchor="middle">Second Verification Attempt</text>
+
+  <!-- State 3: DuplicateAttempt -->
+  <rect x="625" y="60" width="165" height="60" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="707" y="85" font-family="Segoe UI, sans-serif" font-size="11.5" font-weight="bold" fill="#991b1b" text-anchor="middle">DuplicateAttempt</text>
+  <text x="707" y="103" font-family="Segoe UI, sans-serif" font-size="9" fill="#dc2626" text-anchor="middle">High-Intensity Alert</text>
+
+  <!-- Return Transition: Blocked & Logged (State Unchanged) -->
+  <path d="M 640 120 C 610 160, 520 160, 490 120" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#smArrRed)"/>
+  <text x="565" y="166" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#991b1b" text-anchor="middle">Blocked &amp; Logged (Status Remains Voted)</text>
+
+  <!-- End Transition to Conclusion -->
+  <line x1="390" y1="90" x2="355" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#smArr)"/>
+  <circle cx="345" cy="165" r="12" fill="none" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="345" cy="165" r="6" fill="#0f172a"/>
+  <text x="345" y="190" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Election Concluded</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 01:</strong> State transition diagram illustrating the single-direction verification lifecycle.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='11-use-case-model-diagram' class='section-heading section-break'>11. USE CASE MODEL &amp; DIAGRAM</h2>
+<h3 id='111-actor-definitions' class='sub-heading'>11.1 Actor Definitions</h3>
+<ul class='doc-list'>
+<li><strong>Polling Officer:</strong> The active primary user operating the verification kiosk.</li>
+<li><strong>Voter (Passive):</strong> The citizen presenting an RFID or Voter ID credential.</li>
+<li><strong>System Administrator:</strong> An administrative actor responsible for election reset and audit review.</li>
+<li><strong>Physical RFID Reader <code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code>:</strong> An external sensor device streaming scanned card UIDs.</li>
+</ul>
+<h3 id='112-use-case-specifications' class='sub-heading'>11.2 Use Case Specifications</h3>
+<ul class='doc-list'>
+<li><strong>UC-01: Verify Voter Identity <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></strong> – Officer submits credential; system checks registry and marks as Voted if eligible.</li>
+<li><strong>UC-02: Intercept Duplicate Voting Attempt <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></strong> – System detects previously voted status, blocks admission, triggers visual alert, increments counter.</li>
+<li><strong>UC-03: View Summary Metrics <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></strong> – Officer monitors live dashboard counters for total, recorded, pending, and fraud tallies.</li>
+<li><strong>UC-04: View Activity Logs <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></strong> – Officer audits the chronological transaction log of the last 10 verification attempts.</li>
+<li><strong>UC-05: Toggle Visual Theme <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></strong> – Officer adjusts display mode between Light, Dark, or Windows System scheme.</li>
+<li><strong>UC-06: Reset Demo Data <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></strong> – Officer/Admin resets the voter database back to initial demonstration state.</li>
+<li><strong>UC-07: Authenticate Officer Session <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></strong> – Officer logs in using credentials to start an authorized verification session.</li>
+<li><strong>UC-08: Stream Physical RFID Card Tap Event <code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code></strong> – IoT hardware scans physical card and inputs UID automatically.</li>
+</ul>
+<h3 id='113-use-case-diagram' class='sub-heading'>11.3 Use Case Diagram</h3>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 02</span>
+      <span class="diagram-title">VOTE-GUARD System Use Case Model</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED & PLANNED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" width="100%" height="540">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bgGrad)" rx="8"/>
+  
+  <!-- System Boundary -->
+  <rect x="220" y="30" width="480" height="480" rx="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="460" y="58" font-family="Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#1e293b" text-anchor="middle">System Boundary: VOTE-GUARD Verification System</text>
+
+  <!-- Left Actors -->
+  <!-- Polling Officer -->
+  <g transform="translate(90, 160)">
+    <circle cx="20" cy="15" r="12" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+    <line x1="20" y1="27" x2="20" y2="65" stroke="#0284c7" stroke-width="2"/>
+    <line x1="0" y1="40" x2="40" y2="40" stroke="#0284c7" stroke-width="2"/>
+    <line x1="20" y1="65" x2="5" y2="95" stroke="#0284c7" stroke-width="2"/>
+    <line x1="20" y1="65" x2="35" y2="95" stroke="#0284c7" stroke-width="2"/>
+    <text x="20" y="115" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">Polling Officer</text>
+    <text x="20" y="130" font-family="Segoe UI, sans-serif" font-size="10" fill="#64748b" text-anchor="middle">(Primary Operator)</text>
+  </g>
+
+  <!-- Voter (Passive) -->
+  <g transform="translate(90, 370)">
+    <circle cx="20" cy="15" r="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+    <line x1="20" y1="27" x2="20" y2="65" stroke="#64748b" stroke-width="2"/>
+    <line x1="0" y1="40" x2="40" y2="40" stroke="#64748b" stroke-width="2"/>
+    <line x1="20" y1="65" x2="5" y2="95" stroke="#64748b" stroke-width="2"/>
+    <line x1="20" y1="65" x2="35" y2="95" stroke="#64748b" stroke-width="2"/>
+    <text x="20" y="115" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">Voter (Passive)</text>
+    <text x="20" y="130" font-family="Segoe UI, sans-serif" font-size="10" fill="#64748b" text-anchor="middle">(Presents Credential)</text>
+  </g>
+
+  <!-- Right Actors -->
+  <!-- Administrator -->
+  <g transform="translate(790, 140)">
+    <circle cx="20" cy="15" r="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <line x1="20" y1="27" x2="20" y2="65" stroke="#d97706" stroke-width="2"/>
+    <line x1="0" y1="40" x2="40" y2="40" stroke="#d97706" stroke-width="2"/>
+    <line x1="20" y1="65" x2="5" y2="95" stroke="#d97706" stroke-width="2"/>
+    <line x1="20" y1="65" x2="35" y2="95" stroke="#d97706" stroke-width="2"/>
+    <text x="20" y="115" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">System Admin</text>
+    <text x="20" y="130" font-family="Segoe UI, sans-serif" font-size="10" fill="#64748b" text-anchor="middle">(Audit & Reset)</text>
+  </g>
+
+  <!-- Future IoT Reader -->
+  <g transform="translate(790, 360)">
+    <rect x="0" y="20" width="40" height="50" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,2"/>
+    <text x="20" y="48" font-family="Segoe UI, sans-serif" font-size="14" fill="#7c3aed" text-anchor="middle">ðŸ“¶</text>
+    <text x="20" y="90" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#6d28d9" text-anchor="middle">IoT RFID Reader</text>
+    <text x="20" y="105" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#7c3aed" text-anchor="middle">[FUTURE / OPTIONAL]</text>
+  </g>
+
+  <!-- Use Cases Inside Boundary -->
+  <!-- UC-01: Verify Voter -->
+  <ellipse cx="460" cy="95" rx="140" ry="22" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="460" y="99" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#15803d" text-anchor="middle">UC-01: Verify Voter Identity [IMPLEMENTED]</text>
+
+  <!-- UC-02: Flag Duplicate Attempt -->
+  <ellipse cx="460" cy="150" rx="150" ry="22" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="460" y="154" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#991b1b" text-anchor="middle">UC-02: Intercept Duplicate Attempt [IMPLEMENTED]</text>
+
+  <!-- UC-03: View Metrics -->
+  <ellipse cx="460" cy="205" rx="140" ry="22" fill="#edf4ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="460" y="209" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">UC-03: View Summary Metrics [IMPLEMENTED]</text>
+
+  <!-- UC-04: View Activity Logs -->
+  <ellipse cx="460" cy="260" rx="140" ry="22" fill="#edf4ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="460" y="264" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">UC-04: View Activity Logs [IMPLEMENTED]</text>
+
+  <!-- UC-05: Toggle Theme -->
+  <ellipse cx="460" cy="315" rx="140" ry="22" fill="#edf4ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="460" y="319" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">UC-05: Toggle Theme (Light/Dark/OS) [IMPLEMENTED]</text>
+
+  <!-- UC-06: Reset Demo State -->
+  <ellipse cx="460" cy="370" rx="140" ry="22" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="460" y="374" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#b45309" text-anchor="middle">UC-06: Reset Demo State [IMPLEMENTED]</text>
+
+  <!-- UC-07: Officer Auth (PLANNED) -->
+  <ellipse cx="460" cy="425" rx="150" ry="22" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5,3"/>
+  <text x="460" y="429" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#92400e" text-anchor="middle">UC-07: Authenticate Officer Session [PLANNED / NEW]</text>
+
+  <!-- UC-08: Stream Physical Tap (FUTURE) -->
+  <ellipse cx="460" cy="478" rx="155" ry="22" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="5,3"/>
+  <text x="460" y="482" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#6d28d9" text-anchor="middle">UC-08: Stream Physical Card Tap [FUTURE / OPTIONAL]</text>
+
+  <!-- Associations -->
+  <!-- Officer to UCs -->
+  <line x1="140" y1="200" x2="320" y2="95" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="140" y1="200" x2="310" y2="150" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="140" y1="200" x2="320" y2="205" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="140" y1="200" x2="320" y2="260" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="140" y1="200" x2="320" y2="315" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="140" y1="200" x2="310" y2="425" stroke="#d97706" stroke-width="1.2" stroke-dasharray="3,3"/>
+
+  <!-- Admin to UCs -->
+  <line x1="790" y1="180" x2="600" y2="205" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="790" y1="180" x2="600" y2="370" stroke="#d97706" stroke-width="1.2"/>
+  <line x1="790" y1="180" x2="610" y2="425" stroke="#d97706" stroke-width="1.2" stroke-dasharray="3,3"/>
+
+  <!-- IoT to UC-08 -->
+  <line x1="790" y1="400" x2="615" y2="478" stroke="#7c3aed" stroke-width="1.2" stroke-dasharray="3,3"/>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 02:</strong> Boundary, actors, and core use cases for the voter verification system.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='12-data-flow-diagrams' class='section-heading section-break'>12. DATA FLOW DIAGRAMS</h2>
+<h3 id='121-context-diagram-dfd-level-0' class='sub-heading'>12.1 Context Diagram / DFD Level 0</h3>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 03</span>
+      <span class="diagram-title">Context Diagram / Data Flow Diagram Level 0</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED & PLANNED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 400" width="100%" height="400">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Central Process 0.0 -->
+  <circle cx="440" cy="200" r="85" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="440" y="185" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">0.0</text>
+  <text x="440" y="202" font-family="Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">VOTE-GUARD System</text>
+  <text x="440" y="218" font-family="Segoe UI, sans-serif" font-size="10" fill="#475569" text-anchor="middle">(Voter Verification &amp;</text>
+  <text x="440" y="232" font-family="Segoe UI, sans-serif" font-size="10" fill="#475569" text-anchor="middle">Duplicate Detection)</text>
+
+  <!-- External Entity: Polling Officer -->
+  <rect x="40" y="60" width="160" height="70" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+  <text x="120" y="95" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">Polling Officer</text>
+  <text x="120" y="112" font-family="Segoe UI, sans-serif" font-size="10" fill="#64748b" text-anchor="middle">(Kiosk Operator)</text>
+
+  <!-- External Entity: System Administrator -->
+  <rect x="680" y="60" width="160" height="70" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="760" y="95" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">System Admin</text>
+  <text x="760" y="112" font-family="Segoe UI, sans-serif" font-size="10" fill="#64748b" text-anchor="middle">(Management)</text>
+
+  <!-- External Entity: IoT RFID Sensor [FUTURE] -->
+  <rect x="680" y="270" width="160" height="75" rx="8" fill="#faf5ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="760" y="298" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#581c87" text-anchor="middle">IoT RFID Sensor</text>
+  <text x="760" y="315" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#7c3aed" text-anchor="middle">[FUTURE / OPTIONAL]</text>
+  <text x="760" y="330" font-family="Segoe UI, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">(Physical Tag Reader)</text>
+
+  <!-- Data Store: Client / Database [PROPOSED] -->
+  <g transform="translate(40, 270)">
+    <path d="M 0 10 A 80 10 0 0 0 160 10 A 80 10 0 0 0 0 10 Z M 0 10 L 0 60 A 80 10 0 0 0 160 60 L 160 10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="80" y="42" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">D1: Registry &amp; Logs</text>
+    <text x="80" y="58" font-family="Segoe UI, sans-serif" font-size="9" fill="#15803d" text-anchor="middle">[localStorage / PROPOSED DB]</text>
+  </g>
+
+  <!-- Flows -->
+  <!-- Officer to 0.0 -->
+  <path d="M 200 80 Q 320 80 370 140" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="280" y="72" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#334155">RFID / Voter ID</text>
+
+  <!-- 0.0 to Officer -->
+  <path d="M 370 165 Q 260 130 200 115" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="245" y="145" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#334155">Alerts &amp; Live Stats</text>
+
+  <!-- Admin to 0.0 -->
+  <path d="M 680 90 Q 580 90 515 145" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="615" y="80" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#334155">Demo Reset</text>
+
+  <!-- IoT to 0.0 -->
+  <path d="M 680 300 Q 560 300 515 250" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow)"/>
+  <text x="620" y="318" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#7c3aed">Scanned UID [FUTURE]</text>
+
+  <!-- 0.0 to Store -->
+  <path d="M 380 250 Q 280 290 200 295" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="250" y="275" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#15803d">Save Status &amp; Logs</text>
+
+  <!-- Store to 0.0 -->
+  <path d="M 200 320 Q 300 320 380 270" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="260" y="335" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#15803d">Registry Records</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 03:</strong> High-level information flows between external entities and the verification system.
+  </div>
+</div>
+<h3 id='122-dfd-level-1-process-decomposition' class='sub-heading'>12.2 DFD Level 1 (Process Decomposition)</h3>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 04</span>
+      <span class="diagram-title">Data Flow Diagram Level 1 (Process Decomposition)</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED & PLANNED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" width="100%" height="540">
+  <defs>
+    <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Entity: Officer -->
+  <rect x="30" y="50" width="140" height="60" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+  <text x="100" y="80" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">Polling Officer</text>
+  <text x="100" y="96" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#64748b" text-anchor="middle">(Terminal Input)</text>
+
+  <!-- Process 1.0: Normalization -->
+  <circle cx="280" cy="80" r="48" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="280" y="72" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">1.0</text>
+  <text x="280" y="86" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Credential</text>
+  <text x="280" y="99" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Normalization</text>
+
+  <!-- Process 2.0: Registry Matching -->
+  <circle cx="490" cy="80" r="48" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="490" y="72" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">2.0</text>
+  <text x="490" y="86" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Registry</text>
+  <text x="490" y="99" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Matching</text>
+
+  <!-- Data Store D1: Voters -->
+  <g transform="translate(680, 50)">
+    <path d="M 0 10 A 70 8 0 0 0 140 10 A 70 8 0 0 0 0 10 Z M 0 10 L 0 50 A 70 8 0 0 0 140 50 L 140 10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="70" y="35" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">D1: Voter Registry</text>
+    <text x="70" y="48" font-family="Segoe UI, sans-serif" font-size="9" fill="#15803d" text-anchor="middle">[PROPOSED Schema]</text>
+  </g>
+
+  <!-- Process 3.0: Status Evaluation & Fraud -->
+  <circle cx="490" cy="270" r="56" fill="#fef2f2" stroke="#dc2626" stroke-width="2.5"/>
+  <text x="490" y="255" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#991b1b" text-anchor="middle">3.0</text>
+  <text x="490" y="270" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#7f1d1d" text-anchor="middle">Status Evaluation &amp;</text>
+  <text x="490" y="284" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#7f1d1d" text-anchor="middle">Fraud Interception</text>
+
+  <!-- Process 4.0: Metrics Aggregation -->
+  <circle cx="280" cy="270" r="48" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="280" y="262" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">4.0</text>
+  <text x="280" y="276" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Metrics</text>
+  <text x="280" y="289" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Aggregation</text>
+
+  <!-- Process 5.0: Activity & Audit Logging -->
+  <circle cx="490" cy="450" r="48" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="490" y="442" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">5.0</text>
+  <text x="490" y="456" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Audit &amp; Activity</text>
+  <text x="490" y="469" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">Logging</text>
+
+  <!-- Data Store D2: Audit Logs -->
+  <g transform="translate(680, 420)">
+    <path d="M 0 10 A 70 8 0 0 0 140 10 A 70 8 0 0 0 0 10 Z M 0 10 L 0 50 A 70 8 0 0 0 140 50 L 140 10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="70" y="35" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">D2: Audit Logs</text>
+    <text x="70" y="48" font-family="Segoe UI, sans-serif" font-size="9" fill="#15803d" text-anchor="middle">[PROPOSED Schema]</text>
+  </g>
+
+  <!-- Output UI Elements -->
+  <!-- Duplicate Alert Banner -->
+  <rect x="680" y="240" width="160" height="60" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+  <text x="760" y="268" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#b91c1c" text-anchor="middle">ðŸš¨ Duplicate Alert</text>
+  <text x="760" y="284" font-family="Segoe UI, sans-serif" font-size="9" fill="#991b1b" text-anchor="middle">(Animated Shake)</text>
+
+  <!-- Stat Cards UI -->
+  <rect x="30" y="240" width="140" height="60" rx="8" fill="#edf4ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="100" y="268" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">Stat Cards UI</text>
+  <text x="100" y="284" font-family="Segoe UI, sans-serif" font-size="9" fill="#3b82f6" text-anchor="middle">(Browser Real-Time)</text>
+
+  <!-- Activity Table UI -->
+  <rect x="210" y="420" width="140" height="60" rx="8" fill="#edf4ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="280" y="448" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">Activity Table UI</text>
+  <text x="280" y="464" font-family="Segoe UI, sans-serif" font-size="9" fill="#3b82f6" text-anchor="middle">(10-Row Audit Feed)</text>
+
+  <!-- Connectors -->
+  <line x1="170" y1="80" x2="230" y2="80" stroke="#334155" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="330" y1="80" x2="440" y2="80" stroke="#334155" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="540" y1="80" x2="680" y2="75" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="490" y1="130" x2="490" y2="212" stroke="#334155" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="548" y1="270" x2="680" y2="270" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="432" y1="270" x2="330" y2="270" stroke="#334155" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="230" y1="270" x2="170" y2="270" stroke="#334155" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="490" y1="328" x2="490" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="540" y1="450" x2="680" y2="445" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="440" y1="450" x2="350" y2="450" stroke="#334155" stroke-width="1.5" marker-end="url(#arr2)"/>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 04:</strong> Functional decomposition into 5 core operational processes and data stores.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='13-class-diagram' class='section-heading section-break'>13. CLASS DIAGRAM</h2>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 05</span>
+      <span class="diagram-title">Class & Object Model Diagram</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED & PROPOSED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" width="100%" height="540">
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Voter Class -->
+  <g transform="translate(40, 40)">
+    <rect width="240" height="150" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <rect width="240" height="32" rx="6" fill="#0f172a"/>
+    <text x="120" y="21" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">Voter</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ voterId: String</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ name: String</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ rfid: String</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ status: VoterStatus</text>
+    <line x1="0" y1="125" x2="240" y2="125" stroke="#e2e8f0"/>
+    <text x="15" y="142" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ markVoted(): void</text>
+  </g>
+
+  <!-- VerificationResult Class -->
+  <g transform="translate(340, 40)">
+    <rect width="240" height="150" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <rect width="240" height="32" rx="6" fill="#0f172a"/>
+    <text x="120" y="21" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">VerificationResult</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ status: String</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ message: String</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ isDuplicate: Boolean</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ timestamp: String</text>
+    <line x1="0" y1="125" x2="240" y2="125" stroke="#e2e8f0"/>
+    <text x="15" y="142" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ isSuccess(): Boolean</text>
+  </g>
+
+  <!-- VerificationEngine Class -->
+  <g transform="translate(640, 40)">
+    <rect width="240" height="170" rx="6" fill="#f8fafc" stroke="#1d4f85" stroke-width="2"/>
+    <rect width="240" height="32" rx="6" fill="#1d4f85"/>
+    <text x="120" y="21" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">VerificationEngine</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10" fill="#1e293b">+ defaultVoters: Voter[]</text>
+    <text x="15" y="73" font-family="Courier New, monospace" font-size="10" fill="#1e293b">+ fraudAttempts: int</text>
+    <text x="15" y="91" font-family="Courier New, monospace" font-size="10" fill="#1e293b">+ activities: Activity[]</text>
+    <line x1="0" y1="102" x2="240" y2="102" stroke="#e2e8f0"/>
+    <text x="15" y="120" font-family="Courier New, monospace" font-size="10" fill="#1e293b">+ verifyVoter(id): Result</text>
+    <text x="15" y="138" font-family="Courier New, monospace" font-size="10" fill="#1e293b">+ addActivity(rec): void</text>
+    <text x="15" y="156" font-family="Courier New, monospace" font-size="10" fill="#1e293b">+ resetDemo(): void</text>
+  </g>
+
+  <!-- ActivityRecord Class -->
+  <g transform="translate(40, 260)">
+    <rect width="240" height="150" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <rect width="240" height="32" rx="6" fill="#0f172a"/>
+    <text x="120" y="21" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">ActivityRecord</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ voterId: String</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ name: String</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ rfid: String</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ verification: String</text>
+    <line x1="0" y1="125" x2="240" y2="125" stroke="#e2e8f0"/>
+    <text x="15" y="142" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ time: String</text>
+  </g>
+
+  <!-- DashboardMetrics Class -->
+  <g transform="translate(340, 260)">
+    <rect width="240" height="150" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <rect width="240" height="32" rx="6" fill="#0f172a"/>
+    <text x="120" y="21" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">DashboardMetrics</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ totalVoters: int</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ votesRecorded: int</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ pendingVotes: int</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ fraudAttempts: int</text>
+    <line x1="0" y1="125" x2="240" y2="125" stroke="#e2e8f0"/>
+    <text x="15" y="142" font-family="Courier New, monospace" font-size="10.5" fill="#1e293b">+ updateUI(): void</text>
+  </g>
+
+  <!-- UserSession Class [PLANNED] -->
+  <g transform="translate(640, 260)">
+    <rect width="240" height="150" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <rect width="240" height="32" rx="6" fill="#d97706"/>
+    <text x="120" y="21" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">UserSession [PLANNED]</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" fill="#92400e">+ userId: String</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" fill="#92400e">+ username: String</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#92400e">+ role: String</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#92400e">+ stationId: String</text>
+    <line x1="0" y1="125" x2="240" y2="125" stroke="#fde68a"/>
+    <text x="15" y="142" font-family="Courier New, monospace" font-size="10.5" fill="#92400e">+ validateToken(): Bool</text>
+  </g>
+
+  <!-- Future RFID Reader -->
+  <g transform="translate(340, 440)">
+    <rect width="240" height="75" rx="6" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="4,2"/>
+    <text x="120" y="20" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#6d28d9" text-anchor="middle">RFIDReaderService [FUTURE]</text>
+    <text x="15" y="42" font-family="Courier New, monospace" font-size="9.5" fill="#581c87">+ comPort: String [TBD]</text>
+    <text x="15" y="60" font-family="Courier New, monospace" font-size="9.5" fill="#581c87">+ onCardTap(uid): void</text>
+  </g>
+
+  <!-- ThemeManager Class -->
+  <g transform="translate(640, 440)">
+    <rect width="240" height="75" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <text x="120" y="20" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">ThemeManager [IMPLEMENTED]</text>
+    <text x="15" y="42" font-family="Courier New, monospace" font-size="9.5" fill="#1e293b">+ currentTheme: String</text>
+    <text x="15" y="60" font-family="Courier New, monospace" font-size="9.5" fill="#1e293b">+ applyTheme(mode): void</text>
+  </g>
+
+  <!-- Connectors -->
+  <line x1="280" y1="110" x2="340" y2="110" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="580" y1="110" x2="640" y2="110" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="760" y1="210" x2="760" y2="260" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="460" y1="410" x2="460" y2="440" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,2"/>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 05:</strong> Structural blueprint of core entities, relationships, attributes, and methods.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='14-entity-relationship-er-diagram-proposed' class='section-heading section-break'>14. ENTITY-RELATIONSHIP (ER) DIAGRAM <span class="badge badge-proposed">[PROPOSED]</span></h2>
+<div class='callout callout-note page-break-inside-avoid'><p><strong>Note:</strong> The entities, attributes, and relationships depicted below represent a conceptual design <code><span class="badge badge-proposed">[PROPOSED]</span></code>. No specific relational (SQL) or document (NoSQL) database engine has been selected.</p>
+</div>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 06</span>
+      <span class="diagram-title">Conceptual Entity-Relationship Diagram</span>
+    </div>
+    <span class="diagram-tag">[PROPOSED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" width="100%" height="540">
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Watermark: PROPOSED -->
+  <text x="460" y="40" font-family="Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#0369a1" text-anchor="middle">PROPOSED Conceptual Entity-Relationship Model (Technology-Agnostic)</text>
+
+  <!-- Entity: VOTERS -->
+  <g transform="translate(60, 100)">
+    <rect width="220" height="170" rx="6" fill="#f8fafc" stroke="#0284c7" stroke-width="2"/>
+    <rect width="220" height="30" rx="6" fill="#0284c7"/>
+    <text x="110" y="20" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">VOTERS [PROPOSED]</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#0369a1">PK  voter_id (string)</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    full_name (string)</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#b45309">UK  rfid_uid (string)</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    voting_status (enum)</text>
+    <text x="15" y="135" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    created_at (datetime)</text>
+    <text x="15" y="155" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    voted_at (nullable)</text>
+  </g>
+
+  <!-- Entity: ACTIVITY_LOGS -->
+  <g transform="translate(640, 100)">
+    <rect width="220" height="170" rx="6" fill="#f8fafc" stroke="#16a34a" stroke-width="2"/>
+    <rect width="220" height="30" rx="6" fill="#16a34a"/>
+    <text x="110" y="20" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">ACTIVITY_LOGS [PROPOSED]</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#15803d">PK  log_id (int/uuid)</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#0369a1">FK  voter_id (nullable)</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    rfid_uid (string)</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    result (enum)</text>
+    <text x="15" y="135" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    timestamp (datetime)</text>
+    <text x="15" y="155" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#b45309">FK  station_id (nullable)</text>
+  </g>
+
+  <!-- Entity: FRAUD_INCIDENTS -->
+  <g transform="translate(60, 340)">
+    <rect width="220" height="150" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+    <rect width="220" height="30" rx="6" fill="#dc2626"/>
+    <text x="110" y="20" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">FRAUD_INCIDENTS [PROPOSED]</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#991b1b">PK  incident_id (int)</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#0369a1">FK  voter_id (string)</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    attempted_rfid (str)</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    intercepted_at (dt)</text>
+    <text x="15" y="135" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#b45309">FK  station_id (nullable)</text>
+  </g>
+
+  <!-- Entity: POLLING_STATIONS -->
+  <g transform="translate(640, 340)">
+    <rect width="220" height="150" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+    <rect width="220" height="30" rx="6" fill="#d97706"/>
+    <text x="110" y="20" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">POLLING_STATIONS [PROPOSED]</text>
+    <text x="15" y="55" font-family="Courier New, monospace" font-size="10.5" font-weight="bold" fill="#b45309">PK  station_id (string)</text>
+    <text x="15" y="75" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    station_name (str)</text>
+    <text x="15" y="95" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    location (string)</text>
+    <text x="15" y="115" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    is_active (bool)</text>
+    <text x="15" y="135" font-family="Courier New, monospace" font-size="10.5" fill="#334155">    created_at (datetime)</text>
+  </g>
+
+  <!-- Central Diamond: Relationship -->
+  <g transform="translate(410, 155)">
+    <polygon points="50,0 100,30 50,60 0,30" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="50" y="34" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">generates</text>
+  </g>
+
+  <!-- Relationship Lines -->
+  <line x1="280" y1="185" x2="410" y2="185" stroke="#64748b" stroke-width="1.5"/>
+  <text x="295" y="175" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0284c7">1</text>
+  
+  <line x1="510" y1="185" x2="640" y2="185" stroke="#64748b" stroke-width="1.5"/>
+  <text x="620" y="175" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#16a34a">0..N</text>
+
+  <!-- Voters to Fraud -->
+  <line x1="170" y1="270" x2="170" y2="340" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="180" y="305" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#dc2626">1 : 0..N</text>
+
+  <!-- Stations to Logs -->
+  <line x1="750" y1="340" x2="750" y2="270" stroke="#d97706" stroke-width="1.5"/>
+  <text x="760" y="305" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#d97706">1 : 0..N</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 06:</strong> Proposed schema entities: voters, audit_logs, polling_stations, users, and election_events.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='15-sequence-diagrams' class='section-heading section-break'>15. SEQUENCE DIAGRAMS</h2>
+<h3 id='151-polling-officer-authentication-flow-planned-new' class='sub-heading'>15.1 Polling Officer Authentication Flow <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></h3>
+<p class='doc-paragraph'>*This sequence diagram models the planned authentication subsystem.*</p>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 07</span>
+      <span class="diagram-title">Polling Officer Authentication Flow</span>
+    </div>
+    <span class="diagram-tag">[PLANNED / NEW]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 440" width="100%" height="440">
+  <defs>
+    <marker id="arrSeq" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Title & Callout -->
+  <text x="440" y="30" font-family="Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#b45309" text-anchor="middle">Sequence Diagram: Polling Officer Authentication [PLANNED / NEW FEATURE]</text>
+
+  <!-- Lifeline Headers -->
+  <rect x="50" y="55" width="140" height="36" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <text x="120" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">Polling Officer</text>
+
+  <rect x="270" y="55" width="160" height="36" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,2"/>
+  <text x="350" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#92400e" text-anchor="middle">Login UI [PLANNED]</text>
+
+  <rect x="500" y="55" width="160" height="36" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" stroke-dasharray="4,2"/>
+  <text x="580" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#92400e" text-anchor="middle">AuthService [TBD]</text>
+
+  <rect x="710" y="55" width="140" height="36" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="780" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">UserDB [PROPOSED]</text>
+
+  <!-- Lifeline Dashed Lines -->
+  <line x1="120" y1="91" x2="120" y2="410" stroke="#94a3b8" stroke-dasharray="4,4"/>
+  <line x1="350" y1="91" x2="350" y2="410" stroke="#d97706" stroke-dasharray="4,4"/>
+  <line x1="580" y1="91" x2="580" y2="410" stroke="#d97706" stroke-dasharray="4,4"/>
+  <line x1="780" y1="91" x2="780" y2="410" stroke="#16a34a" stroke-dasharray="4,4"/>
+
+  <!-- Messages -->
+  <!-- 1. Enter Credentials -->
+  <line x1="120" y1="130" x2="350" y2="130" stroke="#b45309" stroke-width="1.5" marker-end="url(#arrSeq)"/>
+  <text x="235" y="122" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#92400e" text-anchor="middle">1. Enter Username &amp; Password</text>
+
+  <!-- 2. POST login -->
+  <line x1="350" y1="170" x2="580" y2="170" stroke="#b45309" stroke-width="1.5" marker-end="url(#arrSeq)"/>
+  <text x="465" y="162" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#92400e" text-anchor="middle">2. POST /api/auth/login [TBD]</text>
+
+  <!-- 3. Query Hash -->
+  <line x1="580" y1="210" x2="780" y2="210" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrSeq)"/>
+  <text x="680" y="202" font-family="Segoe UI, sans-serif" font-size="10" fill="#15803d" text-anchor="middle">3. Query User Credentials</text>
+
+  <!-- 4. Hash Match -->
+  <line x1="780" y1="250" x2="580" y2="250" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrSeq)"/>
+  <text x="680" y="242" font-family="Segoe UI, sans-serif" font-size="10" fill="#15803d" text-anchor="middle">4. Return Record &amp; Role</text>
+
+  <!-- 5. Issue Token -->
+  <line x1="580" y1="290" x2="350" y2="290" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrSeq)"/>
+  <text x="465" y="282" font-family="Segoe UI, sans-serif" font-size="10" fill="#92400e" text-anchor="middle">5. 200 OK (Auth Session / Token [TBD])</text>
+
+  <!-- 6. Display Dashboard -->
+  <line x1="350" y1="330" x2="120" y2="330" stroke="#b45309" stroke-width="1.5" marker-end="url(#arrSeq)"/>
+  <text x="235" y="322" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#92400e" text-anchor="middle">6. Render Authorized Dashboard</text>
+
+  <!-- Note box -->
+  <rect x="250" y="360" width="380" height="35" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="440" y="382" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#92400e" text-anchor="middle">Note: Authentication mechanism is TBD; current UI displays static 'Admin' label.</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 07:</strong> Authentication sequence between Polling Officer, Client UI, and Gateway.
+  </div>
+</div>
+<h3 id='152-successful-voter-verification-flow' class='sub-heading'>15.2 Successful Voter Verification Flow</h3>
+<p class='doc-paragraph'>*Models the workflow currently running in the client prototype.*</p>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 08</span>
+      <span class="diagram-title">Successful Voter Verification & Status Simulation Flow</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 440" width="100%" height="440">
+  <defs>
+    <marker id="arrGrn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Title -->
+  <text x="440" y="30" font-family="Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#15803d" text-anchor="middle">Sequence Diagram: Successful Voter Verification Flow [IMPLEMENTED]</text>
+
+  <!-- Lifeline Headers -->
+  <rect x="40" y="55" width="140" height="36" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <text x="110" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">Polling Officer</text>
+
+  <rect x="240" y="55" width="160" height="36" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Verification UI Card</text>
+
+  <rect x="460" y="55" width="160" height="36" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="540" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">verifyVoter() Engine</text>
+
+  <rect x="680" y="55" width="160" height="36" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="760" y="77" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">Registry Store / DB</text>
+
+  <!-- Lifeline Dashed Lines -->
+  <line x1="110" y1="91" x2="110" y2="410" stroke="#94a3b8" stroke-dasharray="4,4"/>
+  <line x1="320" y1="91" x2="320" y2="410" stroke="#94a3b8" stroke-dasharray="4,4"/>
+  <line x1="540" y1="91" x2="540" y2="410" stroke="#94a3b8" stroke-dasharray="4,4"/>
+  <line x1="760" y1="91" x2="760" y2="410" stroke="#16a34a" stroke-dasharray="4,4"/>
+
+  <!-- Messages -->
+  <!-- 1. Enter Unvoted Tag -->
+  <line x1="110" y1="130" x2="320" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#arrGrn)"/>
+  <text x="215" y="122" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">1. Input "RFID001" &amp; Click Verify</text>
+
+  <!-- 2. Invoke verifyVoter -->
+  <line x1="320" y1="170" x2="540" y2="170" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrGrn)"/>
+  <text x="430" y="162" font-family="Segoe UI, sans-serif" font-size="10" fill="#1e3a8a" text-anchor="middle">2. verifyVoter("RFID001")</text>
+
+  <!-- 3. Find Voter -->
+  <line x1="540" y1="210" x2="760" y2="210" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrGrn)"/>
+  <text x="650" y="202" font-family="Segoe UI, sans-serif" font-size="10" fill="#15803d" text-anchor="middle">3. Find record by tag UID</text>
+
+  <!-- 4. Found: Not Voted -->
+  <line x1="760" y1="245" x2="540" y2="245" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrGrn)"/>
+  <text x="650" y="237" font-family="Segoe UI, sans-serif" font-size="10" fill="#15803d" text-anchor="middle">4. Return Voter (status: "Not Voted")</text>
+
+  <!-- 5. Update Status -->
+  <line x1="540" y1="280" x2="760" y2="280" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrGrn)"/>
+  <text x="650" y="272" font-family="Segoe UI, sans-serif" font-size="10" fill="#15803d" text-anchor="middle">5. Update status = "Voted" &amp; log activity</text>
+
+  <!-- 6. Display Success -->
+  <line x1="540" y1="320" x2="320" y2="320" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrGrn)"/>
+  <text x="430" y="312" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#15803d" text-anchor="middle">6. Render "âœ… Voter Verified Successfully"</text>
+
+  <!-- 7. Update Dashboard -->
+  <line x1="320" y1="360" x2="110" y2="360" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrGrn)"/>
+  <text x="215" y="352" font-family="Segoe UI, sans-serif" font-size="10" fill="#15803d" text-anchor="middle">7. Update stat cards &amp; append RFID to feed</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 08:</strong> Standard sequence for an eligible voter presenting an unvoted RFID credential.
+  </div>
+</div>
+<h3 id='153-duplicate-verification-interception-flow' class='sub-heading'>15.3 Duplicate Verification Interception Flow</h3>
+<p class='doc-paragraph'>*Models duplicate detection and the high-visibility alert animation.*</p>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 09</span>
+      <span class="diagram-title">Duplicate Voting Attempt Detection & Incident Logging Flow</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 560" width="100%" height="560">
+  <defs>
+    <marker id="arrDup" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arrNorm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Lifelines Header -->
+  <!-- Officer -->
+  <rect x="50" y="25" width="120" height="42" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+  <text x="110" y="51" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">Polling Officer</text>
+  <line x1="110" y1="67" x2="110" y2="520" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+  <!-- Presentation Layer -->
+  <rect x="250" y="25" width="130" height="42" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="315" y="44" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Presentation Layer</text>
+  <text x="315" y="58" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3b82f6" text-anchor="middle">(VOTE-GUARD UI)</text>
+  <line x1="315" y1="67" x2="315" y2="520" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+  <!-- Verification Engine -->
+  <rect x="490" y="25" width="140" height="42" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="560" y="44" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Verification Engine</text>
+  <text x="560" y="58" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#3b82f6" text-anchor="middle">(Core Logic)</text>
+  <line x1="560" y1="67" x2="560" y2="520" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+  <!-- Storage / Registry -->
+  <rect x="730" y="25" width="140" height="42" rx="6" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+  <text x="800" y="44" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#991b1b" text-anchor="middle">Storage &amp; Audit</text>
+  <text x="800" y="58" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#dc2626" text-anchor="middle">(localStorage / DB [PROPOSED])</text>
+  <line x1="800" y1="67" x2="800" y2="520" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+  <!-- Message 1 -->
+  <line x1="110" y1="100" x2="315" y2="100" stroke="#334155" stroke-width="1.8" marker-end="url(#arrNorm)"/>
+  <text x="212" y="93" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#1e293b" text-anchor="middle">1: Enters / Scans Voter RFID Card</text>
+
+  <!-- Message 2 -->
+  <line x1="315" y1="135" x2="560" y2="135" stroke="#334155" stroke-width="1.8" marker-end="url(#arrNorm)"/>
+  <text x="437" y="128" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#1e293b" text-anchor="middle">2: verifyVoter(rfidCardId)</text>
+
+  <!-- Message 3 -->
+  <line x1="560" y1="170" x2="800" y2="170" stroke="#334155" stroke-width="1.8" marker-end="url(#arrNorm)"/>
+  <text x="680" y="163" font-family="Segoe UI, sans-serif" font-size="10.5" fill="#1e293b" text-anchor="middle">3: lookupVoterRecord(rfidCardId)</text>
+
+  <!-- Message 4 (Return voter object) -->
+  <line x1="800" y1="205" x2="560" y2="205" stroke="#475569" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrNorm)"/>
+  <text x="680" y="198" font-family="Segoe UI, sans-serif" font-size="10" fill="#475569" text-anchor="middle">4: return Voter (has_voted = TRUE)</text>
+
+  <!-- Self evaluation call -->
+  <rect x="555" y="225" width="10" height="40" fill="#fed7aa" stroke="#f97316" stroke-width="1"/>
+  <path d="M 565 235 L 610 235 L 610 255 L 565 255" fill="none" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="618" y="248" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#c2410c">Evaluate has_voted == true: CONFLICT</text>
+
+  <!-- Critical Incident Alert Block -->
+  <rect x="230" y="280" width="630" height="150" rx="6" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="245" y="300" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#b91c1c">[CRITICAL DUPLICATE ATTEMPT DETECTED]</text>
+
+  <!-- Message 5: Log Incident -->
+  <line x1="560" y1="325" x2="800" y2="325" stroke="#dc2626" stroke-width="2" marker-end="url(#arrDup)"/>
+  <text x="680" y="318" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#b91c1c">5: logSecurityIncident(DUPLICATE_BLOCKED)</text>
+
+  <!-- Message 6: Return Rejection -->
+  <line x1="560" y1="365" x2="315" y2="365" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrDup)"/>
+  <text x="437" y="357" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#b91c1c">6: return { status: 'DUPLICATE', voter: profile }</text>
+
+  <!-- Message 7: Render Alert -->
+  <line x1="315" y1="405" x2="110" y2="405" stroke="#dc2626" stroke-width="2" marker-end="url(#arrDup)"/>
+  <text x="212" y="397" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#b91c1c">7: High-Intensity Duplicate Alert UI + Audio Tone</text>
+
+  <!-- Action 8: Halt -->
+  <rect x="60" y="445" width="460" height="50" rx="6" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+  <text x="80" y="465" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#9a3412">Operator Action: Verification Blocked</text>
+  <text x="80" y="482" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#7c2d12">Voter prevented from receiving ballot. Supervisor notified. Metric duplicate_blocked_count incremented.</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 09:</strong> High-priority security response sequence when a previously voted credential is re-scanned.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='16-activity-diagram' class='section-heading section-break'>16. ACTIVITY DIAGRAM</h2>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 10</span>
+      <span class="diagram-title">Voter Verification & Duplicate Attempt Detection Activity Flow</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 680" width="100%" height="680">
+  <defs>
+    <marker id="actArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="actArrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="actArrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Start Node -->
+  <circle cx="460" cy="30" r="14" fill="#0f172a"/>
+  
+  <!-- Arrow 1 -->
+  <line x1="460" y1="44" x2="460" y2="75" stroke="#334155" stroke-width="1.8" marker-end="url(#actArr)"/>
+
+  <!-- Activity 1: Enter / Scan ID -->
+  <rect x="360" y="75" width="200" height="42" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="460" y="100" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Input / Scan Voter RFID ID</text>
+
+  <!-- Arrow 2 -->
+  <line x1="460" y1="117" x2="460" y2="148" stroke="#334155" stroke-width="1.8" marker-end="url(#actArr)"/>
+
+  <!-- Activity 2: Normalize -->
+  <rect x="360" y="148" width="200" height="42" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="460" y="173" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Normalize &amp; Format Input</text>
+
+  <!-- Arrow 3 -->
+  <line x1="460" y1="190" x2="460" y2="225" stroke="#334155" stroke-width="1.8" marker-end="url(#actArr)"/>
+
+  <!-- Decision 1: Query Registry -->
+  <polygon points="460,225 530,260 460,295 390,260" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.8"/>
+  <text x="460" y="264" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#713f12" text-anchor="middle">Voter Found?</text>
+
+  <!-- Branch: Not Found (Left) -->
+  <line x1="390" y1="260" x2="190" y2="260" stroke="#dc2626" stroke-width="1.8" marker-end="url(#actArrRed)"/>
+  <text x="290" y="252" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#b91c1c">[No / Unregistered]</text>
+
+  <rect x="90" y="240" width="100" height="42" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.8"/>
+  <text x="140" y="258" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">Show "Not Found"</text>
+  <text x="140" y="272" font-family="Segoe UI, sans-serif" font-size="9" fill="#dc2626" text-anchor="middle">Error Alert</text>
+
+  <!-- End Node 1 -->
+  <line x1="140" y1="282" x2="140" y2="330" stroke="#334155" stroke-width="1.8" marker-end="url(#actArr)"/>
+  <circle cx="140" cy="345" r="14" fill="none" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="140" cy="345" r="8" fill="#0f172a"/>
+
+  <!-- Branch: Found (Down) -->
+  <line x1="460" y1="295" x2="460" y2="340" stroke="#334155" stroke-width="1.8" marker-end="url(#actArr)"/>
+  <text x="475" y="320" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#15803d">[Yes]</text>
+
+  <!-- Decision 2: Check has_voted -->
+  <polygon points="460,340 540,380 460,420 380,380" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.8"/>
+  <text x="460" y="377" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#713f12" text-anchor="middle">has_voted</text>
+  <text x="460" y="391" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#713f12" text-anchor="middle">== TRUE?</text>
+
+  <!-- Branch: has_voted == TRUE (Right: Duplicate Attempt!) -->
+  <line x1="540" y1="380" x2="720" y2="380" stroke="#dc2626" stroke-width="2" marker-end="url(#actArrRed)"/>
+  <text x="620" y="372" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#b91c1c">[Yes: Duplicate!]</text>
+
+  <rect x="720" y="358" width="170" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="805" y="378" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#991b1b" text-anchor="middle">High-Intensity Alert</text>
+  <text x="805" y="393" font-family="Segoe UI, sans-serif" font-size="9" fill="#dc2626" text-anchor="middle">"Duplicate Voting Detected"</text>
+
+  <line x1="805" y1="402" x2="805" y2="445" stroke="#dc2626" stroke-width="1.8" marker-end="url(#actArrRed)"/>
+
+  <rect x="720" y="445" width="170" height="42" rx="8" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.8"/>
+  <text x="805" y="463" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#9f1239" text-anchor="middle">Log Incident to Audit</text>
+  <text x="805" y="477" font-family="Segoe UI, sans-serif" font-size="9" fill="#be123c" text-anchor="middle">status: DUPLICATE_BLOCKED</text>
+
+  <line x1="805" y1="487" x2="805" y2="530" stroke="#dc2626" stroke-width="1.8" marker-end="url(#actArrRed)"/>
+
+  <rect x="720" y="530" width="170" height="42" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="805" y="548" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">Halt Verification</text>
+  <text x="805" y="562" font-family="Segoe UI, sans-serif" font-size="9" fill="#b91c1c" text-anchor="middle">Ballot Issue Prohibited</text>
+
+  <!-- End Node 2 -->
+  <line x1="805" y1="572" x2="805" y2="615" stroke="#334155" stroke-width="1.8" marker-end="url(#actArr)"/>
+  <circle cx="805" cy="630" r="14" fill="none" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="805" cy="630" r="8" fill="#0f172a"/>
+
+  <!-- Branch: has_voted == FALSE (Down: Valid Verification) -->
+  <line x1="460" y1="420" x2="460" y2="460" stroke="#16a34a" stroke-width="2" marker-end="url(#actArrGreen)"/>
+  <text x="475" y="445" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#15803d">[No: Fresh Voter]</text>
+
+  <rect x="360" y="460" width="200" height="42" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+  <text x="460" y="478" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#14532d" text-anchor="middle">Display "Eligible to Vote"</text>
+  <text x="460" y="493" font-family="Segoe UI, sans-serif" font-size="9" fill="#166534" text-anchor="middle">Green Verification Badge</text>
+
+  <line x1="460" y1="502" x2="460" y2="538" stroke="#16a34a" stroke-width="1.8" marker-end="url(#actArrGreen)"/>
+
+  <rect x="350" y="538" width="220" height="44" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="460" y="556" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#064e3b" text-anchor="middle">Simulate Vote / Mark Voted</text>
+  <text x="460" y="571" font-family="Segoe UI, sans-serif" font-size="9" fill="#047857" text-anchor="middle">Set has_voted = TRUE &amp; Log Audit</text>
+
+  <line x1="460" y1="582" x2="460" y2="616" stroke="#334155" stroke-width="1.8" marker-end="url(#actArr)"/>
+
+  <!-- End Node 3 -->
+  <circle cx="460" cy="630" r="14" fill="none" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="460" cy="630" r="8" fill="#0f172a"/>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 10:</strong> Step-by-step decision tree logic for identity verification and fraud prevention.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='17-system-architecture' class='section-heading section-break'>17. SYSTEM ARCHITECTURE</h2>
+<h3 id='171-architecture-comparison' class='sub-heading'>17.1 Architecture Comparison</h3>
+<ul class='doc-list'>
+<li><strong>Current Prototype Architecture <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  A single-tier presentation architecture. All UI rendering, verification state machines, and data stores reside entirely inside the client browser.</p>
+<ul class='doc-list'>
+<li><strong>Proposed Multi-Tier Architecture <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  A decoupled client-server architecture consisting of a Presentation Tier (existing UI), an Application Logic/API Tier <code><span class="badge badge-tbd">[TBD]</span></code>, and a Persistence Tier <code><span class="badge badge-tbd">[TBD]</span></code>.</p>
+<h3 id='172-architecture-diagram' class='sub-heading'>17.2 Architecture Diagram</h3>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 11</span>
+      <span class="diagram-title">System Architecture: Current Prototype vs. Proposed Connected Architecture</span>
+    </div>
+    <span class="diagram-tag">[IMPLEMENTED & PROPOSED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 620" width="100%" height="620">
+  <defs>
+    <marker id="archArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="archArrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Left: CURRENT PROTOTYPE -->
+  <rect x="30" y="30" width="380" height="560" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.8"/>
+  <rect x="30" y="30" width="380" height="42" rx="10" fill="#e2e8f0"/>
+  <text x="220" y="56" font-family="Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">Current Prototype Architecture [IMPLEMENTED]</text>
+
+  <!-- Browser Container -->
+  <rect x="50" y="95" width="340" height="465" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="50" y="95" width="340" height="32" rx="8" fill="#f1f5f9"/>
+  <text x="220" y="116" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">Single Browser Runtime (Chrome / Edge / Firefox)</text>
+
+  <!-- Component 1: UI Layer -->
+  <rect x="70" y="145" width="300" height="70" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="220" y="170" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Presentation Tier</text>
+  <text x="220" y="188" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#2563eb" text-anchor="middle">HTML5 (Semantic Layout) &amp; CSS3 Variables</text>
+  <text x="220" y="202" font-family="Segoe UI, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Navbar Theme Switcher | Dashboard Grid | Verification Card</text>
+
+  <line x1="220" y1="215" x2="220" y2="245" stroke="#334155" stroke-width="1.5" marker-end="url(#archArr)"/>
+
+  <!-- Component 2: Logic Layer -->
+  <rect x="70" y="245" width="300" height="110" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="220" y="268" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Application Logic Tier (Client JS)</text>
+  <text x="220" y="286" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#1e293b" text-anchor="middle">script.js (Single Engine)</text>
+  <text x="220" y="304" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Credential Parsing &amp; Normalization</text>
+  <text x="220" y="320" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ In-Memory Verification &amp; Duplicate Check</text>
+  <text x="220" y="336" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Dashboard Metrics Aggregation &amp; Audit Logger</text>
+
+  <line x1="220" y1="355" x2="220" y2="385" stroke="#334155" stroke-width="1.5" marker-end="url(#archArr)"/>
+
+  <!-- Component 3: Local Storage -->
+  <rect x="70" y="385" width="300" height="85" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="220" y="408" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#92400e" text-anchor="middle">Storage Tier (Browser LocalStorage)</text>
+  <text x="220" y="426" font-family="Segoe UI, sans-serif" font-size="9" fill="#78350f" text-anchor="middle">Key: vote_guard_voters (JSON Voter Records)</text>
+  <text x="220" y="442" font-family="Segoe UI, sans-serif" font-size="9" fill="#78350f" text-anchor="middle">Key: vote_guard_logs (JSON Audit Records)</text>
+  <text x="220" y="458" font-family="Segoe UI, sans-serif" font-size="9" fill="#78350f" text-anchor="middle">Key: vote_guard_theme (User Preference)</text>
+
+  <!-- Prototype Notice -->
+  <rect x="70" y="485" width="300" height="55" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="220" y="504" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#991b1b" text-anchor="middle">Isolated Client-Side Prototype</text>
+  <text x="220" y="520" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#b91c1c" text-anchor="middle">No backend network calls â€¢ Metrics local only</text>
+  <text x="220" y="532" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#b91c1c" text-anchor="middle">Simulates verification &amp; duplicate detection</text>
+
+  <!-- Right: PROPOSED CONNECTED SYSTEM -->
+  <rect x="470" y="30" width="420" height="560" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+  <rect x="470" y="30" width="420" height="42" rx="10" fill="#dcfce7"/>
+  <text x="680" y="56" font-family="Segoe UI, sans-serif" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">Proposed Connected Architecture [PROPOSED / TBD]</text>
+
+  <!-- Tier 1: Client Terminals -->
+  <rect x="490" y="95" width="380" height="75" rx="8" fill="#ffffff" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="680" y="118" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#15803d" text-anchor="middle">Tier 1: Polling Station Terminals [PLANNED / NEW]</text>
+  <text x="680" y="136" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#1e293b" text-anchor="middle">Operator Web Client / Desktop App (Theme-Aware UI)</text>
+  <text x="680" y="152" font-family="Segoe UI, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">RFID Scanner Hardware Interface [FUTURE / OPTIONAL] | Admin UI</text>
+
+  <line x1="680" y1="170" x2="680" y2="200" stroke="#2563eb" stroke-width="2" marker-end="url(#archArrBlue)"/>
+  <text x="740" y="190" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb">HTTPS / TLS 1.3 [TBD]</text>
+
+  <!-- Tier 2: Gateway & Security -->
+  <rect x="490" y="200" width="380" height="65" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="680" y="222" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0369a1" text-anchor="middle">Tier 2: API Gateway &amp; Security Layer [TBD]</text>
+  <text x="680" y="240" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#0f172a" text-anchor="middle">Reverse Proxy | Rate Limiting | Terminal Authentication</text>
+  <text x="680" y="254" font-family="Segoe UI, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Token/Credential Verification: TBD</text>
+
+  <line x1="680" y1="265" x2="680" y2="295" stroke="#2563eb" stroke-width="2" marker-end="url(#archArrBlue)"/>
+
+  <!-- Tier 3: Core Service API -->
+  <rect x="490" y="295" width="380" height="105" rx="8" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="680" y="318" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#4338ca" text-anchor="middle">Tier 3: Backend Application Service [TBD]</text>
+  <text x="680" y="336" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#0f172a" text-anchor="middle">Central Verification &amp; Security Engine</text>
+  <text x="680" y="354" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Concurrency Control &amp; Atomic Status Updates</text>
+  <text x="680" y="370" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Cross-Station Duplicate Detection &amp; Prevention</text>
+  <text x="680" y="386" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Audit Trail Generator (Hash-Chained / Tamper-Evident)</text>
+
+  <line x1="680" y1="400" x2="680" y2="430" stroke="#2563eb" stroke-width="2" marker-end="url(#archArrBlue)"/>
+
+  <!-- Tier 4: Central Persistence -->
+  <rect x="490" y="430" width="380" height="110" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
+  <text x="680" y="453" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#065f46" text-anchor="middle">Tier 4: Enterprise Central Data Tier [PROPOSED / TBD]</text>
+  <text x="680" y="473" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#0f172a" text-anchor="middle">Central Database Engine: TBD (Relational / Document)</text>
+  <text x="680" y="492" font-family="Segoe UI, sans-serif" font-size="9" fill="#047857" text-anchor="middle">â€¢ voters table [PROPOSED] | audit_logs table [PROPOSED]</text>
+  <text x="680" y="508" font-family="Segoe UI, sans-serif" font-size="9" fill="#047857" text-anchor="middle">â€¢ stations table [PROPOSED] | users table [PROPOSED]</text>
+  <text x="680" y="524" font-family="Segoe UI, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Persistent &amp; Tamper-Evident Storage [PROPOSED]</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 11:</strong> Architectural comparison: isolated client prototype versus proposed multi-tier connected system.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='18-database-design-proposed' class='section-heading section-break'>18. DATABASE DESIGN <span class="badge badge-proposed">[PROPOSED]</span></h2>
+<div class='callout callout-note page-break-inside-avoid'><p><strong>Note:</strong> The schemas below are conceptual representations <code><span class="badge badge-proposed">[PROPOSED]</span></code> to guide future database implementation. No database engine (MySQL, PostgreSQL, MongoDB, SQLite, etc.) has been selected yet.</p>
+</div>
+<h3 id='181-proposed-entity-schemas' class='sub-heading'>18.1 Proposed Entity Schemas</h3>
+<h4 id='1-table-voters-proposed' class='sub-sub-heading'>1. Table: <code>voters</code> <code><span class="badge badge-proposed">[PROPOSED]</span></code></h4>
+<p class='doc-paragraph'>Stores registered electors eligible to participate in the simulation.</p>
+<ul class='doc-list'>
+<li><code>id</code>: Primary Key (UUID or Auto-Increment Integer).</li>
+<li><code>voter_id</code>: Unique Alphanumeric Identifier (e.g., <code>&quot;V001&quot;</code>).</li>
+<li><code>name</code>: Full Name of the voter (e.g., <code>&quot;Rahul Sharma&quot;</code>).</li>
+<li><code>rfid</code>: Unique RFID Tag Identifier (e.g., <code>&quot;RFID001&quot;</code>).</li>
+<li><code>status</code>: Current voting status (<code>&quot;Not Voted&quot;</code> or <code>&quot;Voted&quot;</code>).</li>
+<li><code>voted_at</code>: Nullable Timestamp recording when the elector was verified.</li>
+</ul>
+<h4 id='2-table-activitylogs-proposed' class='sub-sub-heading'>2. Table: <code>activity_logs</code> <code><span class="badge badge-proposed">[PROPOSED]</span></code></h4>
+<p class='doc-paragraph'>Records every verification transaction chronologically.</p>
+<ul class='doc-list'>
+<li><code>log_id</code>: Primary Key.</li>
+<li><code>voter_id</code>: Alphanumeric Identifier (or <code>&quot;N/A&quot;</code> for unregistered).</li>
+<li><code>name</code>: Name of voter (or <code>&quot;Unknown Voter&quot;</code>).</li>
+<li><code>rfid</code>: RFID credential submitted.</li>
+<li><code>status</code>: Voter status at time of scan.</li>
+<li><code>verification</code>: Verification outcome (<code>&quot;Valid&quot;</code>, <code>&quot;Duplicate&quot;</code>, <code>&quot;Rejected&quot;</code>).</li>
+<li><code>timestamp</code>: Precise transaction timestamp.</li>
+<li><code>station_id</code>: Optional identifier for the booth station.</li>
+</ul>
+<h4 id='3-table-fraudincidents-proposed' class='sub-sub-heading'>3. Table: <code>fraud_incidents</code> <code><span class="badge badge-proposed">[PROPOSED]</span></code></h4>
+<p class='doc-paragraph'>Dedicated audit table tracking unauthorized duplicate attempts.</p>
+<ul class='doc-list'>
+<li><code>incident_id</code>: Primary Key.</li>
+<li><code>voter_id</code>: Foreign Key referencing <code>voters.voter_id</code>.</li>
+<li><code>attempted_rfid</code>: RFID string scanned during duplicate attempt.</li>
+<li><code>intercepted_at</code>: Timestamp of interception.</li>
+<li><code>station_id</code>: Terminal identifier where duplicate was blocked.</li>
+</ul>
+<h4 id='4-table-pollingstations-proposed' class='sub-sub-heading'>4. Table: <code>polling_stations</code> <code><span class="badge badge-proposed">[PROPOSED]</span></code></h4>
+<p class='doc-paragraph'>Tracks authorized polling desks in multi-station deployments.</p>
+<ul class='doc-list'>
+<li><code>station_id</code>: Primary Key.</li>
+<li><code>station_name</code>: Descriptive station identifier (e.g., <code>&quot;Booth Desk 01&quot;</code>).</li>
+<li><code>location</code>: Venue/Room identifier.</li>
+<li><code>is_active</code>: Boolean indicating active status.</li>
+</ul>
+<h4 id='5-table-users-proposed' class='sub-sub-heading'>5. Table: <code>users</code> <code><span class="badge badge-proposed">[PROPOSED]</span></code></h4>
+<p class='doc-paragraph'>Stores administrative and officer credentials for system access.</p>
+<ul class='doc-list'>
+<li><code>user_id</code>: Primary Key.</li>
+<li><code>username</code>: Officer username.</li>
+<li><code>password_hash</code>: Cryptographically hashed password.</li>
+<li><code>role</code>: User role (<code>&quot;Officer&quot;</code> or <code>&quot;Administrator&quot;</code>).</li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='19-module-design' class='section-heading section-break'>19. MODULE DESIGN</h2>
+<h3 id='191-presentation-controller-implemented' class='sub-heading'>19.1 Presentation Controller <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></h3>
+<ul class='doc-list'>
+<li><strong>File:</strong> <code>script.js</code> / <code>index.html</code></li>
+<li><strong>Responsibilities:</strong> Manages DOM element references, binds user event listeners (click, keypress, dropdown change), renders dynamic HTML for stat cards, recorded list, and activity table.</li>
+</ul>
+<h3 id='192-verification-engine-implemented' class='sub-heading'>19.2 Verification Engine <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></h3>
+<ul class='doc-list'>
+<li><strong>File:</strong> <code>script.js</code> (<code>verifyVoter()</code>)</li>
+<li><strong>Responsibilities:</strong> Implements validation branching logic, evaluates voting status, increments fraud tallies, applies the <code>.duplicate-alert</code> class with CSS shake animation, and records transaction entries.</li>
+</ul>
+<h3 id='193-state-storage-adapter' class='sub-heading'>19.3 State &amp; Storage Adapter</h3>
+<ul class='doc-list'>
+<li><strong>Current Mode <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>:</strong> Synchronous read/write operations against browser <code>localStorage</code>.</li>
+<li><strong>Planned Mode <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong> Asynchronous HTTP/REST client utilizing <code>fetch()</code> to communicate with backend endpoints (<code>/api/voters</code>, <code>/api/verify</code>, <code>/api/stats</code>).</li>
+</ul>
+<h3 id='194-theme-controller-implemented' class='sub-heading'>19.4 Theme Controller <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></h3>
+<ul class='doc-list'>
+<li><strong>File:</strong> <code>index.html</code> (inline <code>&lt;head&gt;</code> script) and <code>script.js</code></li>
+<li><strong>Responsibilities:</strong> Intercepts theme selection, dynamically queries <code>prefers-color-scheme</code>, updates <code>data-theme</code> attribute on <code>&lt;html&gt;</code>, and stores preference in <code>voteGuardTheme</code>.</li>
+</ul>
+<h3 id='195-security-authentication-interceptor-planned-new' class='sub-heading'>19.5 Security &amp; Authentication Interceptor <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></h3>
+<ul class='doc-list'>
+<li><strong>Status:</strong> <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></li>
+<li><strong>Responsibilities:</strong> Intercepts outgoing requests, attaches session credentials, enforces role-based view permissions, and handles automatic session expiration.</li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='20-future-iot-rfid-integration-future-optional' class='section-heading section-break'>20. FUTURE IoT / RFID INTEGRATION <span class="badge badge-future">[FUTURE / OPTIONAL]</span></h2>
+<div class='callout callout-note page-break-inside-avoid'><p><strong>Status:</strong> All physical hardware components, sensors, microcontrollers, and communication protocols discussed in this section are classified as <code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code> and <code><span class="badge badge-tbd">[TBD]</span></code>. No hardware decisions have been finalized.</p>
+</div>
+<h3 id='201-hardware-components-tbd-future-optional' class='sub-heading'>20.1 Hardware Components <code>[TBD / FUTURE / OPTIONAL]</code></h3>
+<ul class='doc-list'>
+<li><strong>RFID Transponder:</strong> 13.56 MHz High-Frequency contactless smart cards / key fobs (ISO/IEC 14443A).</li>
+<li><strong>RFID Reader Module:</strong> Contactless reader module (e.g., MFRC522 or PN532 NFC reader) <code><span class="badge badge-tbd">[TBD]</span></code>.</li>
+<li><strong>Microcontroller Unit (MCU):</strong> Development board (e.g., ESP32, Arduino Uno/Nano, Raspberry Pi) <code><span class="badge badge-tbd">[TBD]</span></code>.</li>
+</ul>
+<h3 id='202-ingestion-protocols-tbd-future-optional' class='sub-heading'>20.2 Ingestion Protocols <code>[TBD / FUTURE / OPTIONAL]</code></h3>
+<ul class='doc-list'>
+<li><strong>Web Serial API:</strong> Enables the web browser to communicate directly with USB-connected serial microcontrollers without local server software.</li>
+<li><strong>WebSocket Daemon:</strong> A lightweight background agent reading serial data from COM ports and broadcasting scanned UIDs over WebSockets.</li>
+<li><strong>MQTT Message Broker:</strong> Network protocol for distributed polling booths emitting card tap events to a centralized broker.</li>
+</ul>
+<h3 id='203-future-iot-architecture-diagram' class='sub-heading'>20.3 Future IoT Architecture Diagram</h3>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 12</span>
+      <span class="diagram-title">Future Physical IoT / RFID Scanner Integration Architecture</span>
+    </div>
+    <span class="diagram-tag">[FUTURE / OPTIONAL & TBD]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" width="100%" height="540">
+  <defs>
+    <marker id="iotArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <linearGradient id="iotPill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Status Banner -->
+  <rect x="250" y="15" width="420" height="34" rx="17" fill="url(#iotPill)"/>
+  <text x="460" y="37" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">CLASSIFICATION: [FUTURE / OPTIONAL] &amp; [TBD]</text>
+
+  <!-- Physical RFID Card -->
+  <g transform="translate(40, 80)">
+    <rect x="0" y="0" width="140" height="90" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <rect x="15" y="15" width="30" height="25" rx="3" fill="#fbbf24"/>
+    <text x="70" y="60" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#312e81" text-anchor="middle">RFID Smart Card</text>
+    <text x="70" y="76" font-family="Segoe UI, sans-serif" font-size="9" fill="#4338ca" text-anchor="middle">13.56 MHz / MIFARE [TBD]</text>
+  </g>
+
+  <!-- Wireless Wave indicator -->
+  <path d="M 195 110 A 25 25 0 0 1 195 140" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+  <path d="M 205 102 A 38 38 0 0 1 205 148" fill="none" stroke="#6366f1" stroke-width="2"/>
+  <path d="M 215 95 A 50 50 0 0 1 215 155" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="205" y="175" font-family="Segoe UI, sans-serif" font-size="9" fill="#4f46e5" text-anchor="middle">RF Signal</text>
+
+  <!-- Hardware Module: Reader + MCU -->
+  <g transform="translate(245, 75)">
+    <rect x="0" y="0" width="190" height="100" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+    <rect x="10" y="10" width="170" height="35" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="95" y="28" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">RFID Reader Module</text>
+    <text x="95" y="40" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#2563eb" text-anchor="middle">(RC522 / PN532 [TBD])</text>
+
+    <rect x="10" y="55" width="170" height="35" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="95" y="73" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#78350f" text-anchor="middle">Microcontroller Unit</text>
+    <text x="95" y="85" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#92400e" text-anchor="middle">(ESP32 / Arduino / RP2040 [TBD])</text>
+  </g>
+
+  <!-- Connection to Host Terminal -->
+  <line x1="435" y1="125" x2="495" y2="125" stroke="#334155" stroke-width="2" marker-end="url(#iotArr)"/>
+  <text x="465" y="115" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">USB / Serial</text>
+  <text x="465" y="142" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#64748b" text-anchor="middle">(HID / CDC [TBD])</text>
+
+  <!-- Edge Host Terminal -->
+  <g transform="translate(500, 60)">
+    <rect x="0" y="0" width="380" height="130" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="190" y="24" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">Polling Station Terminal (Host PC)</text>
+    
+    <rect x="15" y="35" width="160" height="42" rx="5" fill="#ffffff" stroke="#22c55e" stroke-width="1"/>
+    <text x="95" y="53" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#15803d" text-anchor="middle">Local Serial Bridge /</text>
+    <text x="95" y="67" font-family="Segoe UI, sans-serif" font-size="9" fill="#15803d" text-anchor="middle">Web Serial API [TBD]</text>
+
+    <line x1="175" y1="56" x2="205" y2="56" stroke="#16a34a" stroke-width="1.5" marker-end="url(#iotArr)"/>
+
+    <rect x="205" y="35" width="160" height="42" rx="5" fill="#ffffff" stroke="#22c55e" stroke-width="1"/>
+    <text x="285" y="53" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#15803d" text-anchor="middle">VOTE-GUARD UI Client</text>
+    <text x="285" y="67" font-family="Segoe UI, sans-serif" font-size="9" fill="#15803d" text-anchor="middle">Auto-populates RFID field</text>
+
+    <rect x="15" y="85" width="350" height="35" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="190" y="100" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#14532d" text-anchor="middle">Theme-Responsive Verification Interface</text>
+    <text x="190" y="112" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#166534" text-anchor="middle">Navbar Theme Switcher (Light / Dark / System)</text>
+  </g>
+
+  <!-- Network connection downward -->
+  <line x1="690" y1="190" x2="690" y2="240" stroke="#2563eb" stroke-width="2" marker-end="url(#iotArr)"/>
+  <text x="745" y="215" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#2563eb">Encrypted Network Payload (TLS 1.3 [TBD])</text>
+
+  <!-- Central Backend & Cloud Verification -->
+  <g transform="translate(180, 240)">
+    <rect x="0" y="0" width="600" height="140" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+    <text x="300" y="26" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">Central Verification &amp; Security Services [TBD]</text>
+
+    <rect x="20" y="42" width="170" height="78" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
+    <text x="105" y="64" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Voter Registry Service</text>
+    <text x="105" y="80" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#2563eb" text-anchor="middle">Matches RFID UID against</text>
+    <text x="105" y="94" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#2563eb" text-anchor="middle">electoral roll records</text>
+    <text x="105" y="108" font-family="Segoe UI, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">[PROPOSED]</text>
+
+    <rect x="215" y="42" width="170" height="78" rx="6" fill="#fef2f2" stroke="#ef4444" stroke-width="1.2"/>
+    <text x="300" y="64" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">Duplicate Blocker Engine</text>
+    <text x="300" y="80" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#dc2626" text-anchor="middle">Enforces atomic status lock</text>
+    <text x="300" y="94" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#dc2626" text-anchor="middle">Cross-booth duplicate reject</text>
+    <text x="300" y="108" font-family="Segoe UI, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">[PROPOSED]</text>
+
+    <rect x="410" y="42" width="170" height="78" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+    <text x="495" y="64" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#065f46" text-anchor="middle">Audit Trail Logger</text>
+    <text x="495" y="80" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#059669" text-anchor="middle">Persistent &amp; tamper-evident</text>
+    <text x="495" y="94" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#059669" text-anchor="middle">record for every attempt</text>
+    <text x="495" y="108" font-family="Segoe UI, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">[PROPOSED]</text>
+  </g>
+
+  <!-- Technical Decision Note -->
+  <g transform="translate(60, 400)">
+    <rect x="0" y="0" width="800" height="115" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+    <text x="25" y="26" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#92400e">Important Architecture Clarification on Future Hardware Integration:</text>
+    <text x="25" y="48" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#78350f">1. Hardware &amp; IoT components are classified strictly as [FUTURE / OPTIONAL] and are not present in the current prototype.</text>
+    <text x="25" y="68" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#78350f">2. The current prototype relies entirely on manual terminal input and simulated test credentials (RFID-88219, etc.).</text>
+    <text x="25" y="88" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#78350f">3. Physical RFID readers, microcontroller firmwares, communication protocols (Web Serial / WebSockets), and backend engines are [TBD].</text>
+    <text x="25" y="105" font-family="Segoe UI, sans-serif" font-size="9.5" fill="#78350f">4. The system is designed to simulate voter verification and duplicate detection, not to conduct official government elections.</text>
+  </g>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 12:</strong> Physical RFID smart card reader, microcontroller bridge, and terminal integration layout.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='21-security-requirements' class='section-heading section-break'>21. SECURITY REQUIREMENTS</h2>
+<ul class='doc-list'>
+<li><strong>21.1 Identity Spoofing Mitigation:</strong></li>
+</ul>
+<p class='doc-paragraph'>  Prevent unauthorized manual entry of arbitrary ID strings by validating credential formats and checking against the registered database.</p>
+<ul class='doc-list'>
+<li><strong>21.2 Race-Condition Mitigation <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  In multi-booth deployments, concurrent verification attempts for the exact same credential must be handled via atomic transactions to prevent double-accreditation.</p>
+<ul class='doc-list'>
+<li><strong>21.3 Persistent and Tamper-Evident Audit Storage <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  Audit records must be stored in a centralized, secure database that prevents retrospective modification or local tampering.</p>
+<ul class='doc-list'>
+<li><strong>21.4 Authentication Mechanism <code>[TBD / PLANNED / NEW]</code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  Authentication mechanism: <strong>TBD</strong> — to be selected after backend and system architecture review.</p>
+<hr class='doc-divider'>
+<h2 id='22-technology-decision-register' class='section-heading section-break'>22. TECHNOLOGY DECISION REGISTER</h2>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Layer</th>
+<th>Component</th>
+<th>Status</th>
+<th>Specification / Notes</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Frontend UI</strong></td>
+<td>Markup Structure</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td><strong>HTML5</strong> semantic tags (<code>index.html</code>).</td>
+</tr>
+<tr>
+<td><strong>Frontend UI</strong></td>
+<td>Styling &amp; Visual Themes</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td><strong>CSS3</strong> with variables, Grid, Flexbox, Animations (<code>style.css</code>).</td>
+</tr>
+<tr>
+<td><strong>Frontend UI</strong></td>
+<td>Client-Side Controller</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td><strong>Vanilla JavaScript (ES6+)</strong> (<code>script.js</code>).</td>
+</tr>
+<tr>
+<td><strong>Prototype Storage</strong></td>
+<td>Local State Cache</td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td><strong>Browser localStorage</strong> (temporary prototype storage).</td>
+</tr>
+<tr>
+<td><strong>Backend Runtime</strong></td>
+<td>Server Environment</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.* No language or runtime assumed.</td>
+</tr>
+<tr>
+<td><strong>Backend Framework</strong></td>
+<td>Web / REST Framework</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.*</td>
+</tr>
+<tr>
+<td><strong>Database Engine</strong></td>
+<td>Storage System</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.* (Relational vs. Document model open).</td>
+</tr>
+<tr>
+<td><strong>ORM / Data Access</strong></td>
+<td>Database Layer</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.*</td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Officer Credentials &amp; Session</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.* (Mechanism TBD).</td>
+</tr>
+<tr>
+<td><strong>Hardware MCU</strong></td>
+<td>Physical Microcontroller</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.* (Future hardware scope).</td>
+</tr>
+<tr>
+<td><strong>Hardware Sensor</strong></td>
+<td>RFID/NFC Module</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.* (Future hardware scope).</td>
+</tr>
+<tr>
+<td><strong>IoT Protocol</strong></td>
+<td>Hardware Communication</td>
+<td><code><span class="badge badge-tbd">[TBD]</span></code></td>
+<td>*Pending team decision.* (Future hardware scope).</td>
+</tr>
+</tbody></table></div>
+
+<hr class='doc-divider'>
+<h2 id='23-current-vs-planned-vs-future-feature-matrix' class='section-heading section-break'>23. CURRENT VS. PLANNED VS. FUTURE FEATURE MATRIX</h2>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Feature / Subsystem</th>
+<th>Implemented Status</th>
+<th>Description &amp; Operational Scope</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Credential Input Box</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Text input field for manual RFID / Voter ID entry with Enter key support.</td>
+</tr>
+<tr>
+<td><strong>String Sanitization</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Automated trimming and uppercase conversion in client JavaScript.</td>
+</tr>
+<tr>
+<td><strong>Registry Search</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Case-insensitive lookup matching registered voter records.</td>
+</tr>
+<tr>
+<td><strong>Duplicate Voting Detection</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Interception of previously voted records with instant failure routing.</td>
+</tr>
+<tr>
+<td><strong>High-Visibility Alert</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Bold red banner with glowing accent bar and CSS shake animation.</td>
+</tr>
+<tr>
+<td><strong>Real-Time Stat Counters</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Total, Recorded, Pending, and Fraud Attempt counters (browser-isolated).</td>
+</tr>
+<tr>
+<td><strong>Recorded Voters Feed</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Live vertical list displaying RFID tags of electors who have voted.</td>
+</tr>
+<tr>
+<td><strong>Recent Activity Log</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Chronological table of latest 10 transactions with color-coded badges.</td>
+</tr>
+<tr>
+<td><strong>Demo Data Reset</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Reset button with confirmation dialog restoring baseline mock state.</td>
+</tr>
+<tr>
+<td><strong>Theme Switching</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Borderless dropdown supporting Light, Dark, and Windows System theme sync.</td>
+</tr>
+<tr>
+<td><strong>Responsive Web Layout</strong></td>
+<td><code><span class="badge badge-implemented">[IMPLEMENTED]</span></code></td>
+<td>Fluid presentation layout scaling across mobile, tablet, and desktop.</td>
+</tr>
+<tr>
+<td><strong>Polling Officer Authentication</strong></td>
+<td><code><span class="badge badge-planned">[PLANNED / NEW]</span></code></td>
+<td>Secure login screen and credential validation for booth supervisors.</td>
+</tr>
+<tr>
+<td><strong>Centralized Database Storage</strong></td>
+<td><code><span class="badge badge-planned">[PLANNED / NEW]</span></code></td>
+<td>Shared server database replacing client-side <code>localStorage</code>.</td>
+</tr>
+<tr>
+<td><strong>Atomic Concurrency Locks</strong></td>
+<td><code><span class="badge badge-planned">[PLANNED / NEW]</span></code></td>
+<td>Server-side race-condition prevention across simultaneous booth checks.</td>
+</tr>
+<tr>
+<td><strong>Persistent Audit Storage</strong></td>
+<td><code><span class="badge badge-planned">[PLANNED / NEW]</span></code></td>
+<td>Persistent and tamper-evident audit storage in central database.</td>
+</tr>
+<tr>
+<td><strong>Database Schema Definitions</strong></td>
+<td><code><span class="badge badge-proposed">[PROPOSED]</span></code></td>
+<td>Proposed conceptual schemas for Voters, Activity, Fraud, Stations, Users.</td>
+</tr>
+<tr>
+<td><strong>Physical RFID Scanner</strong></td>
+<td><code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code></td>
+<td>Hardware sensor scanning physical 13.56MHz cards automatically.</td>
+</tr>
+<tr>
+<td><strong>Hardware Signal Feedback</strong></td>
+<td><code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code></td>
+<td>Physical LED lights (Green/Red) and buzzer attached to polling booth.</td>
+</tr>
+<tr>
+<td><strong>Multi-Booth Live Sync</strong></td>
+<td><code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code></td>
+<td>Instant cross-booth synchronization across distributed polling locations.</td>
+</tr>
+<tr>
+<td><strong>Biometric Multi-Factor Match</strong></td>
+<td><code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code></td>
+<td>Secondary biometric verification (fingerprint / facial verification).</td>
+</tr>
+</tbody></table></div>
+
+<hr class='doc-divider'>
+<h2 id='24-limitations' class='section-heading section-break'>24. LIMITATIONS</h2>
+<ol class='doc-list'>
+<li><strong>Client-Side Prototype Constraints:</strong> All current logic operates inside the user&#39;s browser; clearing browser cache clears mock voter statuses and activity logs.</li>
+<li><strong>Single-Browser Isolation:</strong> Current metrics are real-time only within the single browser tab. Changes do not sync across different machines.</li>
+<li><strong>Absence of Real Security Enforcement:</strong> Without a server-side authentication layer, client-side data can be viewed or altered using browser DevTools.</li>
+<li><strong>Manual Hardware Emulation:</strong> The current prototype requires manual typing or pasting of tags rather than receiving real-time contactless sensor events.</li>
+</ol>
+<hr class='doc-divider'>
+<h2 id='25-future-scope' class='section-heading section-break'>25. FUTURE SCOPE</h2>
+<ol class='doc-list'>
+<li><strong>Backend &amp; Database Realization:</strong> Development of the centralized API layer and persistent database using technologies chosen in the Decision Register.</li>
+<li><strong>Physical IoT Sensor Enclosure:</strong> Construction of a standalone verification terminal featuring a microcontroller, RFID sensor, status OLED display, and buzzer.</li>
+<li><strong>Multi-Station Polling Network:</strong> Distributed synchronization allowing dozens of registration desks within an election precinct to verify electors concurrently.</li>
+<li><strong>Multi-Factor Biometric Verification:</strong> Integration of fingerprint or facial recognition sensors alongside the RFID credential for high-assurance validation.</li>
+</ol>
+<hr class='doc-divider'>
+<h2 id='26-conclusion' class='section-heading section-break'>26. CONCLUSION</h2>
+<p class='doc-paragraph'>VOTE-GUARD successfully demonstrates the viability of a real-time voter verification and duplicate voting attempt interception system. Its intuitive interface, animated high-visibility duplicate alerts, and responsive multi-theme presentation establish a solid foundation for electoral security verification.</p>
+<p class='doc-paragraph'>By maintaining strict technological neutrality regarding backend, database, and hardware layers, this documentation provides a clear, production-ready blueprint for academic review and upcoming full-stack implementation.</p>
+<hr class='doc-divider'>
+<h2 id='27-references' class='section-heading section-break'>27. REFERENCES</h2>
+<ol class='doc-list'>
+<li>IEEE Standard for Software Quality Assurance Processes (IEEE Std 730-2014).</li>
+<li>ISO/IEC/IEEE 29148:2018 Systems and Software Engineering — Life Cycle Processes — Requirements Engineering.</li>
+<li>NIST Special Publication 800-63B: Digital Identity Guidelines — Authentication and Lifecycle Management.</li>
+<li>W3C Web Content Accessibility Guidelines (WCAG) 2.1.</li>
+<li>ISO/IEC 14443-1:2018 Identification cards — Contactless integrated circuit cards — Proximity cards.</li>
+</ol>
+
+    </div>
+  </div>
+</body>
+</html>

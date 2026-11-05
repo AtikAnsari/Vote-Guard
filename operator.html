@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote-Guard | Polling Booth Operator Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem("voteGuardTheme") || "light";
+            const isDark = savedTheme === "dark" || 
+                (savedTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            if (isDark) {
+                document.documentElement.setAttribute("data-theme", "dark");
+            } else {
+                document.documentElement.setAttribute("data-theme", "light");
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo-icon">🛡️</span>
+            <span>VOTE-GUARD</span>
+        </div>
+
+        <div class="admin-section">
+            <div class="theme-switcher">
+                <select id="themeSelect" class="theme-select" aria-label="Theme Selection">
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="system">💻 System</option>
+                </select>
+            </div>
+
+            <!-- Role Badge -->
+            <span class="role-badge role-badge-kiosk">🖥️ Operator Mode</span>
+            <span id="operatorNameDisplay" class="admin-name">Polling Officer</span>
+
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+    </header>
+
+    <!-- ================= MAIN OPERATOR VIEW ================= -->
+    <main class="dashboard">
+
+        <!-- Page Heading & Hardware Connection Bar -->
+        <div class="page-heading">
+            <div>
+                <h1>Polling Booth Operator Terminal</h1>
+                <p>Live Hardware Receiver Sync — Automatic Physical RFID Voter Verification</p>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button type="button" id="connectSerialBtn" class="btn-secondary" style="padding: 8px 16px; font-size: 13px; width: auto;">
+                    🔌 USB Serial (Optional Debug)
+                </button>
+                <div class="system-status">
+                    <span id="receiverStatusDot" class="status-dot"></span>
+                    <span id="receiverStatusText">Wi-Fi Standby</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= THE SINGLE CENTRAL RESULT DISPLAY ================= -->
+        <div class="operator-container">
+            
+            <div id="operatorResultCard" class="operator-result-card state-idle">
+                <div id="stateIcon" class="state-icon">📡</div>
+                <div id="stateTitle" class="state-title">Ready for Voter RFID Card</div>
+                <div id="stateDesc" class="state-desc">
+                    Waiting for physical RFID scan from DevKit V1 receiver... Tap voter card on scanner.
+                </div>
+
+                <!-- Synchronized Hardware Indicator Bar -->
+                <div class="operator-led-sync-bar">
+                    <div class="hw-lamp">
+                        <div id="ledGreen" class="hw-lamp-dot hw-lamp-green"></div>
+                        <span>GREEN (Vote Done)</span>
+                    </div>
+                    <div class="hw-lamp">
+                        <div id="ledYellow" class="hw-lamp-dot hw-lamp-yellow"></div>
+                        <span>YELLOW (Not Registered)</span>
+                    </div>
+                    <div class="hw-lamp">
+                        <div id="ledRed" class="hw-lamp-dot hw-lamp-red"></div>
+                        <span>RED (Duplicate Vote)</span>
+                    </div>
+                    <div id="buzzerIndicator" class="hw-buzzer">
+                        🔊 BUZZER IDLE
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hardware Live Sync Details -->
+            <div style="margin-top: 20px; font-size: 13px; color: #64748b; line-height: 1.6;">
+                <div>⚡ <strong>Hardware Setup:</strong> ESP32 DevKit V1 + RC522 RFID Reader (SPI: D5, D18, D19, D23, D4)</div>
+                <div>💡 <strong>LED Outputs:</strong> Green (GPIO 25), Red (GPIO 26), Yellow (GPIO 27) | 🔊 <strong>Buzzer:</strong> GPIO 32</div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="operator.js"></script>
+</body>
+</html>

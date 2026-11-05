@@ -1,0 +1,1717 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOTE-GUARD â€” First Working Hardware Prototype: Hardware Requirements &amp; BOM</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #2563eb;
+      --text: #1e293b;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      
+      --badge-impl-bg: #dcfce7; --badge-impl-text: #166534; --badge-impl-border: #86efac;
+      --badge-plan-bg: #dbeafe; --badge-plan-text: #1e40af; --badge-plan-border: #93c5fd;
+      --badge-fut-bg: #ede9fe;  --badge-fut-text: #5b21b6;  --badge-fut-border: #c4b5fd;
+      --badge-prop-bg: #fef3c7; --badge-prop-text: #92400e; --badge-prop-border: #fcd34d;
+      --badge-tbd-bg: #f1f5f9;  --badge-tbd-text: #475569;  --badge-tbd-border: #cbd5e1;
+      --badge-buy-bg: #fee2e2;  --badge-buy-text: #991b1b;  --badge-buy-border: #fca5a5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: var(--text);
+      background-color: #ffffff;
+    }
+
+    .document-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 50px;
+    }
+
+    /* Cover Page */
+    .cover-page {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 60px 40px 40px 40px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+      margin-bottom: 50px;
+      page-break-after: always;
+    }
+
+    .cover-top {
+      border-top: 8px solid var(--accent);
+      padding-top: 40px;
+    }
+
+    .cover-kicker {
+      font-size: 13pt;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .cover-title {
+      font-size: 30pt;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.15;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .cover-subtitle {
+      font-size: 16pt;
+      font-weight: 500;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 30px;
+    }
+
+    .cover-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 35px;
+    }
+
+    .cover-meta-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px 30px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .meta-item { display: flex; flex-direction: column; }
+    .meta-label { font-size: 9.5pt; font-weight: 600; color: #64748b; text-transform: uppercase; }
+    .meta-value { font-size: 11pt; font-weight: 600; color: var(--primary); margin-top: 2px; }
+
+    .cover-notice {
+      background: #eff6ff;
+      border-left: 4px solid var(--accent);
+      padding: 16px 20px;
+      border-radius: 4px;
+      font-size: 10pt;
+      color: #1e3a8a;
+      line-height: 1.5;
+    }
+
+    /* Hierarchy */
+    h2.section-heading {
+      font-size: 18pt;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 45px;
+      margin-bottom: 18px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: -0.3px;
+    }
+
+    h3.sub-heading {
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-top: 28px;
+      margin-bottom: 12px;
+    }
+
+    h4.sub-sub-heading {
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    p.doc-paragraph {
+      margin-bottom: 14px;
+      text-align: justify;
+    }
+
+    hr.doc-divider {
+      border: 0;
+      height: 1px;
+      background: var(--border);
+      margin: 35px 0;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-size: 8.5pt;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .badge-implemented { background: var(--badge-impl-bg); color: var(--badge-impl-text); border: 1px solid var(--badge-impl-border); }
+    .badge-planned { background: var(--badge-plan-bg); color: var(--badge-plan-text); border: 1px solid var(--badge-plan-border); }
+    .badge-future { background: var(--badge-fut-bg); color: var(--badge-fut-text); border: 1px solid var(--badge-fut-border); }
+    .badge-proposed { background: var(--badge-prop-bg); color: var(--badge-prop-text); border: 1px solid var(--badge-prop-border); }
+    .badge-tbd { background: var(--badge-tbd-bg); color: var(--badge-tbd-text); border: 1px solid var(--badge-tbd-border); }
+    .badge-buy { background: var(--badge-buy-bg); color: var(--badge-buy-text); border: 1px solid var(--badge-buy-border); }
+    .badge-opt { background: #fefce8; color: #713f12; border: 1px solid #fde047; }
+    .badge-fut { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+    /* Callouts */
+    .callout {
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 22px 0;
+      border-left: 5px solid;
+    }
+    .callout-status { background: #eff6ff; border-color: #2563eb; color: #1e3a8a; }
+    .callout-status h4 { color: #1e40af; margin-bottom: 8px; }
+    .callout-warning { background: #fef2f2; border-color: #dc2626; color: #991b1b; }
+    .callout-warning h4 { color: #b91c1c; margin-bottom: 8px; }
+    .callout-note { background: #f8fafc; border-color: #64748b; color: #334155; }
+    .callout-note h4 { color: #1e293b; margin-bottom: 8px; }
+    .callout-tip { background: #f0fdf4; border-color: #16a34a; color: #14532d; }
+
+    /* Lists */
+    ul.doc-list, ol.doc-list { margin: 12px 0 16px 24px; }
+    ul.doc-list li, ol.doc-list li { margin-bottom: 6px; }
+
+    /* Tables */
+    .table-wrapper {
+      margin: 24px 0;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    table.doc-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; text-align: left; }
+    table.doc-table th { background: var(--primary); color: #ffffff; font-weight: 600; padding: 10px 14px; border-right: 1px solid rgba(255,255,255,0.1); }
+    table.doc-table th:last-child { border-right: none; }
+    table.doc-table td { padding: 9px 14px; border-top: 1px solid var(--border); border-right: 1px solid var(--border); vertical-align: top; }
+    table.doc-table td:last-child { border-right: none; }
+    table.doc-table tbody tr:nth-child(even) { background: #f8fafc; }
+    table.doc-table tbody tr:hover { background: #f1f5f9; }
+
+    /* Code */
+    pre.code-block, pre.diagram-code {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-family: 'Consolas', monospace;
+      font-size: 9pt;
+      overflow-x: auto;
+      margin: 18px 0;
+    }
+    code { font-family: 'Consolas', monospace; font-size: 9.5pt; background: #f1f5f9; color: #0f172a; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
+    pre code { background: transparent; color: inherit; padding: 0; border: none; }
+
+    /* Diagrams */
+    .diagram-container {
+      margin: 32px 0;
+      border: 1px solid var(--border-dark);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .diagram-title-group { display: flex; align-items: center; gap: 12px; }
+    .diagram-badge { background: var(--primary); color: #ffffff; font-size: 8pt; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+    .diagram-title { font-size: 10.5pt; font-weight: 700; color: var(--primary); }
+    .diagram-tag { font-size: 8.5pt; font-weight: 600; color: var(--text-muted); }
+    .diagram-svg-wrapper { padding: 20px; display: flex; justify-content: center; align-items: center; background: #ffffff; overflow-x: auto; }
+    .diagram-svg-wrapper svg { max-width: 100%; height: auto; display: block; }
+    .diagram-caption { background: #f8fafc; padding: 10px 18px; border-top: 1px solid var(--border); font-size: 9pt; color: var(--text-muted); text-align: center; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Print */
+    @media print {
+      body { font-size: 9.5pt; line-height: 1.45; color: #000000; }
+      .document-container { padding: 0; max-width: 100%; }
+      .cover-page { min-height: 95vh; border: none; padding: 40px 20px; page-break-after: always; }
+      .section-break { page-break-before: always; }
+      .page-break-inside-avoid { page-break-inside: avoid; break-inside: avoid; }
+      h2, h3 { page-break-after: avoid; }
+      table.doc-table th { background: #1e293b !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .diagram-container { page-break-inside: avoid; break-inside: avoid; border: 1px solid #cbd5e1; box-shadow: none; }
+      .callout { page-break-inside: avoid; break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { size: A4; margin: 15mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="document-container">
+    <!-- Executive Cover Page -->
+    <div class="cover-page">
+      <div class="cover-top">
+        <div class="cover-kicker">Hardware Specification &amp; Bill of Materials</div>
+        <div class="cover-title">VOTE-GUARD</div>
+        <div class="cover-subtitle">First Working Hardware Prototype<br><span style="font-size: 13pt; color: #64748b;">Physical RFID Detection, Microcontroller Pinout &amp; Sensory Feedback Architecture</span></div>
+        
+        <div class="cover-badges">
+          <span class="badge badge-implemented">[IMPLEMENTED: Frontend Prototype]</span>
+          <span class="badge badge-planned">[PLANNED / NEW: Hardware &amp; Serial Link]</span>
+          <span class="badge badge-proposed">[PROPOSED: Pinout &amp; Schematics]</span>
+          <span class="badge badge-future">[FUTURE / OPTIONAL: OLED &amp; Casing]</span>
+          <span class="badge badge-tbd">[TBD: Backend &amp; Database Technology]</span>
+        </div>
+
+        <div class="cover-meta-card">
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Document Release</span>
+              <span class="meta-value">1.0.0 (Engineering Master)</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Publication Date</span>
+              <span class="meta-value">October 2026</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Target Hardware</span>
+              <span class="meta-value">ESP32 DevKit V1 (30-Pin) + RC522</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Total Prototype Budget</span>
+              <span class="meta-value">â‚¹850 â€“ â‚¹1,180 (~ â€“ )</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Author / Organization</span>
+              <span class="meta-value">VOTE-GUARD Engineering Team</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Document Scope</span>
+              <span class="meta-value">Hardware Requirements &amp; BOM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-notice">
+        <strong>Academic &amp; Prototype Context:</strong> For the prototype, the RFID UID is used as a test identifier mapped to a voter record. UID-based identification alone should not be considered sufficient for secure real-world voter authentication. This prototype demonstrates physical RFID card detection, UID extraction, communication with a host terminal, voter record lookup, instantaneous duplicate-attempt interception, and physical sensory feedback. It does not provide production-grade election security.
+      </div>
+    </div>
+
+    <!-- Main Content Body -->
+    <div class="main-content">
+<h2 id='hardware-requirements-bill-of-materials-bom' class='section-heading section-break'>Hardware Requirements &amp; Bill of Materials (BOM)</h2>
+<div class='callout callout-note page-break-inside-avoid'><p><strong>Document Version:</strong> 1.0.0 (Engineering Release)</p>
+<p><strong>Project Scope:</strong> First Working Hardware Demonstration Prototype</p>
+<p><strong>Status:</strong> Hardware Planning &amp; Component Specification</p>
+<p><strong>Author:</strong> VOTE-GUARD Engineering Team</p>
+<p><strong>Date:</strong> October 2026</p>
+<p><strong>Classification Standard:</strong></p>
+<p>&#226;€&#162; <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code> &#226;€” Currently functional in the existing client-side HTML/CSS/JavaScript prototype</p>
+<p>&#226;€&#162; <code><span class="badge badge-planned">[PLANNED / NEW]</span></code> &#226;€” Features intended for the physical hardware and connected integration phase</p>
+<p>&#226;€&#162; <code><span class="badge badge-proposed">[PROPOSED]</span></code> &#226;€” Conceptual hardware architectures, circuits, and schemas under evaluation</p>
+<p>&#226;€&#162; <code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code> &#226;€” Long-term extensions (OLED display, biometrics, custom casing, battery backup)</p>
+<p>&#226;€&#162; <code><span class="badge badge-tbd">[TBD]</span></code> &#226;€” Decisions reserved until further system review (backend framework, database engine)</p>
+</div>
+<hr class='doc-divider'>
+<div class='callout callout-status page-break-inside-avoid'><h4 class='callout-heading'>&#240;Ÿ›&#161;&#239;&#184; Official Prototype Scope &amp; Academic Engineering Statement</h4>
+<p><strong>VOTE-GUARD is currently a client-side voter verification and duplicate-attempt detection prototype.</strong></p>
+<p>The existing frontend prototype utilizes browser-based local storage (<code>localStorage</code>) and manual keyboard input to simulate voter verification.</p>
+<p>The hardware design specified in this document defines the <strong>First Working Hardware Prototype</strong>. The physical prototype integrates an RFID reader and an embedded microcontroller to capture physical card test credentials and provide immediate sensory feedback (LEDs and buzzer).</p>
+<li><strong>College Prototype Context:</strong> For the prototype, the RFID Unique Identifier (UID) is used as a test identifier mapped to a voter record. UID-based identification alone should not be considered sufficient for secure real-world voter authentication.</li>
+<li><strong>Scope of Demonstration:</strong> The prototype demonstrates physical RFID card detection, UID extraction, communication with a host terminal, voter record lookup, instantaneous duplicate-attempt interception, and physical sensory feedback. It does <strong>not</strong> provide production-grade election security or official government voting services.</li>
+<li><strong>Backend Neutrality:</strong> Backend technologies (Python, Node.js, Java, FastAPI, Spring Boot) and database engines (MySQL, PostgreSQL, MongoDB, SQLite) remain strictly <strong><code><span class="badge badge-tbd">[TBD]</span></code></strong> and are not assumed by this hardware specification.</li>
+</div>
+<hr class='doc-divider'>
+<h2 id='table-of-contents' class='section-heading section-break'>TABLE OF CONTENTS</h2>
+<ol class='doc-list'>
+<li><a href="#1-project-hardware-overview">Project Hardware Overview</a></li>
+<li><a href="#2-hardware-design-principles--constraints">Hardware Design Principles &amp; Constraints</a></li>
+<li><a href="#3-vote-guard-hardware-requirements">VOTE-GUARD Hardware Requirements</a></li>
+<li><a href="#4-hardware-architecture">Hardware Architecture</a></li>
+<li><a href="#5-hardware-component-classification">Hardware Component Classification</a></li>
+<li><a href="#6-complete-bill-of-materials-bom">Complete Bill of Materials (BOM)</a></li>
+<li><a href="#7-rfid-reader-selection">RFID Reader Selection</a></li>
+<li><a href="#8-microcontroller-selection">Microcontroller Selection</a></li>
+<li><a href="#9-physical-feedback-system">Physical Feedback System</a></li>
+<li><a href="#10-power-supply--electrical-requirements">Power Supply &amp; Electrical Requirements</a></li>
+<li><a href="#11-electrical-compatibility--safety">Electrical Compatibility &amp; Safety</a></li>
+<li><a href="#12-wiring--pinout-specification">Wiring &amp; Pinout Specification</a></li>
+<li><a href="#13-hardware-to-software-communication-flow">Hardware-to-Software Communication Flow</a></li>
+<li><a href="#14-end-to-end-hardware-workflow">End-to-End Hardware Workflow</a></li>
+<li><a href="#15-purchasing-checklist">Purchasing Checklist</a></li>
+<li><a href="#16-recommended-first-prototype-hardware-stack">Recommended First Prototype Hardware Stack</a></li>
+<li><a href="#17-estimated-prototype-cost">Estimated Prototype Cost</a></li>
+<li><a href="#18-future-hardware-expansion">Future Hardware Expansion</a></li>
+<li><a href="#19-hardware-limitations">Hardware Limitations</a></li>
+<li><a href="#20-conclusion">Conclusion</a></li>
+</ol>
+<hr class='doc-divider'>
+<h2 id='1-project-hardware-overview' class='section-heading section-break'>1. PROJECT HARDWARE OVERVIEW</h2>
+<p class='doc-paragraph'>VOTE-GUARD is designed to tackle one of the most critical vulnerabilities in electoral administration: <strong>duplicate voting and voter impersonation at the polling booth</strong>. While traditional paper registers rely on manual line-crossing and indelible ink, VOTE-GUARD demonstrates an automated, tamper-evident verification barrier.</p>
+<p class='doc-paragraph'>The current working system exists as an interactive client-side web application <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>, where a polling officer manually enters voter credentials to simulate eligibility verification, status locking, and duplicate-attempt detection.</p>
+<p class='doc-paragraph'>To bridge the gap between software simulation and real-world deployment, the project team has decided to prioritize building the <strong>First Working Hardware Prototype</strong> before selecting or implementing a centralized backend infrastructure. This hardware prototype introduces a physical RFID tap station that replaces manual typing with contact-free card reading and supplements onscreen dashboard alerts with unmistakable physical sensory feedback (illuminated LEDs and acoustic buzzer alarms).</p>
+<hr class='doc-divider'>
+<h2 id='2-hardware-design-principles-constraints' class='section-heading section-break'>2. HARDWARE DESIGN PRINCIPLES &amp; CONSTRAINTS</h2>
+<p class='doc-paragraph'>The development of the first physical prototype is guided by strict engineering and economic constraints:</p>
+<ol class='doc-list'>
+<li><strong>Backend Technology Independence <code><span class="badge badge-tbd">[TBD]</span></code>:</strong></li>
+</ol>
+<p class='doc-paragraph'>   The hardware prototype communicates with the host computer over standard universal serial streams. It does not presuppose whether the eventual backend will be written in Python, Java, Go, or Node.js, nor does it mandate a relational or document database.</p>
+<ol class='doc-list'>
+<li><strong>Current System Compatibility <code><span class="badge badge-implemented">[IMPLEMENTED]</span></code>:</strong></li>
+</ol>
+<p class='doc-paragraph'>   The hardware must easily map to the existing prototype data models (such as <code>RFID-88219</code>, <code>RFID-44012</code>, etc.) without breaking current dashboard workflows.</p>
+<ol class='doc-list'>
+<li><strong>Budget Accessibility for Academic Research:</strong></li>
+</ol>
+<p class='doc-paragraph'>   The Bill of Materials (BOM) must remain affordable for college engineering teams, keeping the total acquisition cost under &#226;‚&#185;1,200 ($14.00) while using readily available commercial off-the-shelf (COTS) components.</p>
+<ol class='doc-list'>
+<li><strong>Electrical Safety &amp; Reliability:</strong></li>
+</ol>
+<p class='doc-paragraph'>   All component voltages, logic thresholds, and current limits must be strictly verified. The design avoids fragile level-shifting hacks, respects ESP32 pin strapping constraints, and isolates inductive buzzer loads.</p>
+<ol class='doc-list'>
+<li><strong>No Scope Creep:</strong></li>
+</ol>
+<p class='doc-paragraph'>   Complex accessories such as graphic displays, motorized card locks, or biometric cameras are excluded from the initial prototype to ensure rapid, fail-safe assembly and reliable testing.</p>
+<hr class='doc-divider'>
+<h2 id='3-vote-guard-hardware-requirements' class='section-heading section-break'>3. VOTE-GUARD HARDWARE REQUIREMENTS</h2>
+<p class='doc-paragraph'>The physical prototype must satisfy five core functional hardware requirements:</p>
+<ul class='doc-list'>
+<li><strong>HR-01: Proximity Card Detection:</strong></li>
+</ul>
+<p class='doc-paragraph'>  The station must automatically energize passive 13.56 MHz RFID transponders when placed within a 2 cm to 5 cm proximity field.</p>
+<ul class='doc-list'>
+<li><strong>HR-02: Unique Identifier (UID) Extraction:</strong></li>
+</ul>
+<p class='doc-paragraph'>  The embedded controller must reliably read the transponder&#39;s factory-burned 4-byte or 7-byte UID and convert it to a standardized ASCII hex string.</p>
+<ul class='doc-list'>
+<li><strong>HR-03: Workstation Serial Connectivity <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  The controller must establish a bidirectional, plug-and-play USB Serial communication link (115200 baud) with the polling officer&#39;s workstation.</p>
+<ul class='doc-list'>
+<li><strong>HR-04: Tri-State Sensory Feedback <code><span class="badge badge-planned">[PLANNED / NEW]</span></code>:</strong></li>
+</ul>
+<p class='doc-paragraph'>  The hardware must provide immediate, distinct physical feedback for the three operational outcomes:</p>
+<ul class='doc-list'>
+<li><strong>Valid Voter:</strong> Solid Green LED + single affirmative confirmation tone.</li>
+<li><strong>Duplicate Voting Attempt:</strong> Rapidly strobing Red LED + high-intensity triple alarm siren.</li>
+<li><strong>Unregistered Card:</strong> Solid Yellow LED + double error buzz.</li>
+<li><strong>HR-05: Bus-Powered Simplicity:</strong></li>
+</ul>
+<p class='doc-paragraph'>  The entire hardware apparatus must operate solely from standard USB 5V bus power without requiring an external AC wall adapter.</p>
+<hr class='doc-divider'>
+<h2 id='4-hardware-architecture' class='section-heading section-break'>4. HARDWARE ARCHITECTURE</h2>
+<p class='doc-paragraph'>The hardware architecture organizes the prototype into three distinct physical domains: the <strong>Polling Booth Hardware Station</strong>, the <strong>Communication Interface</strong>, and the <strong>Host Workstation / Terminal</strong>.</p>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 01</span>
+      <span class="diagram-title">VOTE-GUARD Hardware System Architecture</span>
+    </div>
+    <span class="diagram-tag">[RECOMMENDED & PLANNED]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 580" width="100%" height="580">
+  <defs>
+    <marker id="hwArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <marker id="hwArrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="hwArrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Main Left Container: Physical Station -->
+  <rect x="25" y="25" width="450" height="530" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+  <rect x="25" y="25" width="450" height="40" rx="10" fill="#e2e8f0"/>
+  <text x="250" y="50" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">PHYSICAL PROTOTYPE HARDWARE STATION</text>
+
+  <!-- Step 1: RFID Card -->
+  <g transform="translate(50, 85)">
+    <rect x="0" y="0" width="170" height="70" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.8"/>
+    <rect x="12" y="12" width="24" height="20" rx="2" fill="#fbbf24"/>
+    <text x="95" y="32" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#312e81" text-anchor="middle">Voter RFID Card</text>
+    <text x="95" y="48" font-family="Segoe UI, sans-serif" font-size="9" fill="#4338ca" text-anchor="middle">MIFARE Classic 1K</text>
+    <text x="95" y="60" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#6366f1" text-anchor="middle">13.56 MHz (ISO 14443A)</text>
+  </g>
+
+  <!-- RF Coupling Arrow -->
+  <line x1="220" y1="120" x2="275" y2="120" stroke="#4f46e5" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#hwArr)"/>
+  <text x="248" y="112" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#4f46e5" text-anchor="middle">13.56 MHz RF</text>
+
+  <!-- Step 2: RC522 Reader -->
+  <g transform="translate(280, 85)">
+    <rect x="0" y="0" width="170" height="70" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+    <text x="85" y="28" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">RC522 RFID Reader</text>
+    <text x="85" y="44" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="middle">MFRC522 Transceiver</text>
+    <text x="85" y="58" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#dc2626" text-anchor="middle">3.3V DC Supply Only</text>
+  </g>
+
+  <!-- SPI Bus downward -->
+  <line x1="365" y1="155" x2="365" y2="200" stroke="#334155" stroke-width="2" marker-end="url(#hwArr)"/>
+  <text x="405" y="180" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#334155">SPI Bus (3.3V)</text>
+
+  <!-- Step 3: ESP32 MCU -->
+  <g transform="translate(50, 200)">
+    <rect x="0" y="0" width="400" height="110" rx="8" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+    <rect x="15" y="12" width="120" height="86" rx="4" fill="#0f172a"/>
+    <text x="75" y="50" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">ESP32</text>
+    <text x="75" y="66" font-family="Segoe UI, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">NodeMCU DevKit V1</text>
+    <text x="75" y="80" font-family="Segoe UI, sans-serif" font-size="8" fill="#38bdf8" text-anchor="middle">30-Pin / 3.3V Logic</text>
+
+    <text x="270" y="32" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">Microcontroller Firmware</text>
+    <text x="270" y="50" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Reads card UID via hardware SPI</text>
+    <text x="270" y="66" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Transmits ASCII string over USB Serial</text>
+    <text x="270" y="82" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Receives decision byte from PC</text>
+    <text x="270" y="98" font-family="Segoe UI, sans-serif" font-size="9" fill="#475569" text-anchor="middle">â€¢ Drives LEDs &amp; Buzzer via Safe GPIOs</text>
+  </g>
+
+  <!-- GPIO Feedback downward -->
+  <line x1="250" y1="310" x2="250" y2="345" stroke="#334155" stroke-width="2" marker-end="url(#hwArr)"/>
+  <text x="250" y="335" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#334155" text-anchor="middle">GPIO Control Lines</text>
+
+  <!-- Step 4: Physical Feedback Section -->
+  <rect x="40" y="350" width="420" height="185" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="250" y="372" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">PHYSICAL SENSORY FEEDBACK SYSTEM</text>
+
+  <!-- Green LED Box -->
+  <rect x="55" y="385" width="90" height="65" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <circle cx="100" cy="408" r="10" fill="#22c55e"/>
+  <text x="100" y="432" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#14532d" text-anchor="middle">Green LED</text>
+  <text x="100" y="443" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#166534" text-anchor="middle">GPIO 25 (Valid)</text>
+
+  <!-- Red LED Box -->
+  <rect x="155" y="385" width="90" height="65" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <circle cx="200" cy="408" r="10" fill="#ef4444"/>
+  <text x="200" y="432" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#991b1b" text-anchor="middle">Red LED</text>
+  <text x="200" y="443" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#dc2626" text-anchor="middle">GPIO 26 (Duplicate)</text>
+
+  <!-- Yellow LED Box -->
+  <rect x="255" y="385" width="90" height="65" rx="6" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+  <circle cx="300" cy="408" r="10" fill="#eab308"/>
+  <text x="300" y="432" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#713f12" text-anchor="middle">Yellow LED</text>
+  <text x="300" y="443" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#854d0e" text-anchor="middle">GPIO 27 (Unreg)</text>
+
+  <!-- Buzzer Box -->
+  <rect x="355" y="385" width="90" height="65" rx="6" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+  <rect x="388" y="398" width="24" height="20" rx="3" fill="#334155"/>
+  <text x="400" y="432" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#0f172a" text-anchor="middle">Active Buzzer</text>
+  <text x="400" y="443" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#475569" text-anchor="middle">GPIO 32 (Alarm)</text>
+
+  <text x="250" y="475" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#475569" text-anchor="middle">â€¢ Valid: Green LED Solid (2s) + Single Short Tone</text>
+  <text x="250" y="492" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#b91c1c" text-anchor="middle">â€¢ Duplicate Attempt: Red LED Rapid Flash + Triple Alarm Siren</text>
+  <text x="250" y="509" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#713f12" text-anchor="middle">â€¢ Unregistered: Yellow LED Solid (2s) + Double Buzz</text>
+  <text x="250" y="525" font-family="Segoe UI, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Buzzer driven via NPN Transistor (BC547/2N2222) driver for GPIO safety</text>
+
+  <!-- Communication Channel (Middle) -->
+  <g transform="translate(485, 210)">
+    <rect x="0" y="0" width="80" height="90" rx="6" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="40" y="24" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#0369a1" text-anchor="middle">USB SERIAL</text>
+    <text x="40" y="38" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#0284c7" text-anchor="middle">COMMUNICATION</text>
+    <text x="40" y="54" font-family="Segoe UI, sans-serif" font-size="7.5" font-weight="bold" fill="#b45309" text-anchor="middle">[PLANNED / NEW]</text>
+
+    <!-- Bi-directional arrows -->
+    <line x1="-10" y1="68" x2="90" y2="68" stroke="#2563eb" stroke-width="2" marker-end="url(#hwArrBlue)"/>
+    <text x="40" y="82" font-family="Segoe UI, sans-serif" font-size="7" fill="#475569" text-anchor="middle">115200 Baud</text>
+  </g>
+
+  <!-- Main Right Container: Host Workstation -->
+  <rect x="580" y="25" width="335" height="530" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <rect x="580" y="25" width="335" height="40" rx="10" fill="#dbeafe"/>
+  <text x="747" y="50" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">HOST WORKSTATION / TERMINAL</text>
+
+  <!-- VOTE-GUARD Dashboard Box -->
+  <g transform="translate(600, 85)">
+    <rect x="0" y="0" width="295" height="150" rx="8" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="147" y="26" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">VOTE-GUARD Verification System</text>
+    <text x="147" y="42" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#15803d" text-anchor="middle">[IMPLEMENTED: Frontend Prototype]</text>
+
+    <text x="20" y="68" font-family="Segoe UI, sans-serif" font-size="9" fill="#1e293b">â€¢ HTML5 / CSS3 / Vanilla JavaScript</text>
+    <text x="20" y="85" font-family="Segoe UI, sans-serif" font-size="9" fill="#1e293b">â€¢ Browser localStorage Registry &amp; Audit Log</text>
+    <text x="20" y="102" font-family="Segoe UI, sans-serif" font-size="9" fill="#1e293b">â€¢ High-Intensity Duplicate Alert UI</text>
+    <text x="20" y="119" font-family="Segoe UI, sans-serif" font-size="9" fill="#1e293b">â€¢ Dashboard Metrics &amp; Theme Switcher</text>
+    <text x="20" y="136" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#64748b">â€¢ Manual input active; Serial receiver [PLANNED]</text>
+  </g>
+
+  <!-- Verification Decision Engine -->
+  <g transform="translate(600, 260)">
+    <rect x="0" y="0" width="295" height="135" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="147" y="26" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">Verification Decision Logic</text>
+
+    <rect x="15" y="40" width="265" height="26" rx="4" fill="#f0fdf4" stroke="#16a34a" stroke-width="1"/>
+    <text x="25" y="57" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#14532d">has_voted == FALSE: Return 'V' (Valid)</text>
+
+    <rect x="15" y="72" width="265" height="26" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+    <text x="25" y="89" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#991b1b">has_voted == TRUE: Return 'D' (Duplicate!)</text>
+
+    <rect x="15" y="104" width="265" height="26" rx="4" fill="#fefce8" stroke="#ca8a04" stroke-width="1"/>
+    <text x="25" y="121" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#713f12">UID Not Found: Return 'U' (Unregistered)</text>
+  </g>
+
+  <!-- Future Connected Server Box -->
+  <g transform="translate(600, 420)">
+    <rect x="0" y="0" width="295" height="115" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <text x="147" y="26" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="bold" fill="#475569" text-anchor="middle">Future Centralized Backend &amp; DB</text>
+    <text x="147" y="42" font-family="Segoe UI, sans-serif" font-size="8.5" font-weight="bold" fill="#64748b" text-anchor="middle">[FUTURE / OPTIONAL &amp; TBD]</text>
+
+    <text x="20" y="65" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#64748b">â€¢ Centralized database engine: TBD</text>
+    <text x="20" y="82" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#64748b">â€¢ Multi-booth real-time synchronization</text>
+    <text x="20" y="99" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#64748b">â€¢ Backend technology remains technology-neutral</text>
+  </g>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 01:</strong> Block diagram showing RFID card coupling, ESP32 processing, USB serial link, host verification, and physical feedback.
+  </div>
+</div>
+<hr class='doc-divider'>
+<h2 id='5-hardware-component-classification' class='section-heading section-break'>5. HARDWARE COMPONENT CLASSIFICATION</h2>
+<p class='doc-paragraph'>Every item in the VOTE-GUARD hardware ecosystem is systematically classified to ensure focused procurement and clear milestone execution:</p>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Classification</th>
+<th>Definition</th>
+<th>Hardware Scope</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>A. Essential Components</strong></td>
+<td>Minimal hardware required to scan physical RFID cards, extract their UIDs, send them to the workstation, and actuate physical sensory feedback.</td>
+<td>ESP32 DevKit V1, RC522 RFID Module, MIFARE Classic Cards, Status LEDs (Green, Red, Yellow), Active Buzzer, NPN Transistor, Resistors, Breadboard, Jumper Wires, USB Cable.</td>
+</tr>
+<tr>
+<td><strong>B. Recommended Assembly Items</strong></td>
+<td>Consumables and items that enhance testing efficiency, component protection, and physical presentation.</td>
+<td>Adhesive Card Labels (for tagging test voter names/IDs), Anti-static Sleeves, Acrylic mounting plate.</td>
+</tr>
+<tr>
+<td><strong>C. Optional / Future Hardware</strong></td>
+<td>Advanced components reserved for future multi-booth synchronization, offline edge autonomy, or exhibition casing.</td>
+<td>0.96&quot; I2C OLED Display, 5V 2A DC Wall Adapter, ABS Project Box Enclosure, Biometric Fingerprint Sensor, Thermal Receipt Audit Printer.</td>
+</tr>
+</tbody></table></div>
+
+<hr class='doc-divider'>
+<h2 id='6-complete-bill-of-materials-bom' class='section-heading section-break'>6. COMPLETE BILL OF MATERIALS (BOM)</h2>
+<p class='doc-paragraph'>The Bill of Materials below specifies all components required to construct the First Working Hardware Prototype.</p>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>No.</th>
+<th>Component</th>
+<th>Recommended Model / Type</th>
+<th>Qty</th>
+<th>Purpose</th>
+<th>Status</th>
+<th>Approx. Market Price (INR)</th>
+<th>Approx. Market Price (USD)</th>
+<th>Technical &amp; Safety Notes</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>Microcontroller Board</strong></td>
+<td><strong>ESP32 NodeMCU DevKit V1</strong> (30-pin, CP2102/CH340)</td>
+<td>1</td>
+<td>Master embedded controller; manages SPI RFID polling, USB serial bridge, and feedback GPIOs.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;350 &#226;€“ &#226;‚&#185;480</td>
+<td>$4.20 &#226;€“ $5.80</td>
+<td>Native 3.3V logic (eliminates level shifters); built-in USB-to-UART; Wi-Fi/BLE ready for future backend.</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>RFID Reader Module</strong></td>
+<td><strong>RC522 (MFRC522)</strong> 13.56 MHz RFID Kit</td>
+<td>1</td>
+<td>Transmits 13.56 MHz carrier wave to read ISO 14443A card UIDs.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;140 &#226;€“ &#226;‚&#185;200</td>
+<td>$1.70 &#226;€“ $2.40</td>
+<td><strong>Strictly 3.3V DC power.</strong> Must connect to ESP32 3V3 rail. Includes straight pin header.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>RFID Smart Cards</strong></td>
+<td>MIFARE Classic 1K (13.56 MHz, S50, White PVC)</td>
+<td>5</td>
+<td>Physical voter credentials mapped to registered voter records.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;70 &#226;€“ &#226;‚&#185;100</td>
+<td>$0.85 &#226;€“ $1.20</td>
+<td>Standard 4-byte factory UID; rewritable blocks; printable surface for voter photo/ID simulation.</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><strong>RFID Keyfobs</strong></td>
+<td>MIFARE Classic 1K 13.56 MHz Keyfobs (Blue ABS)</td>
+<td>3</td>
+<td>Portable test tokens used to simulate duplicate and unregistered voters.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;30 &#226;€“ &#226;‚&#185;50</td>
+<td>$0.35 &#226;€“ $0.60</td>
+<td>Sturdy ABS plastic casing; ideal for rapid verification stress testing.</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td><strong>Green Status LED</strong></td>
+<td>5mm Diffused Green LED</td>
+<td>1</td>
+<td>Visual indicator for <strong>Valid Voter Verification</strong>.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;2 &#226;€“ &#226;‚&#185;5</td>
+<td>$0.05 &#226;€“ $0.10</td>
+<td>Forward voltage ~2.0V&#226;€“2.2V; driven via GPIO 25 through a 220&#206;&#169; resistor.</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td><strong>Red Status LED</strong></td>
+<td>5mm Diffused Red LED</td>
+<td>1</td>
+<td>Visual warning for <strong>Duplicate Voting Attempt Interception</strong>.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;2 &#226;€“ &#226;‚&#185;5</td>
+<td>$0.05 &#226;€“ $0.10</td>
+<td>Forward voltage ~1.8V&#226;€“2.0V; strobed via GPIO 26 through a 220&#206;&#169; resistor.</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td><strong>Yellow Status LED</strong></td>
+<td>5mm Diffused Yellow LED</td>
+<td>1</td>
+<td>Visual indicator for <strong>Unregistered / Unknown RFID Card</strong>.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;2 &#226;€“ &#226;‚&#185;5</td>
+<td>$0.05 &#226;€“ $0.10</td>
+<td>Forward voltage ~2.0V&#226;€“2.1V; driven via GPIO 27 through a 220&#206;&#169; resistor.</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td><strong>Active Piezo Buzzer</strong></td>
+<td>5V / 3.3V Active Buzzer (Continuous Tone)</td>
+<td>1</td>
+<td>Auditory alert siren for card scan, success tone, and fraud warning.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;15 &#226;€“ &#226;‚&#185;30</td>
+<td>$0.18 &#226;€“ $0.40</td>
+<td>Active type (contains internal oscillator; sounds on DC HIGH). Driven via NPN driver on GPIO 32.</td>
+</tr>
+<tr>
+<td><strong>9</strong></td>
+<td><strong>NPN Driver Transistor</strong></td>
+<td><strong>BC547</strong> or <strong>2N2222</strong> (TO-92 Package)</td>
+<td>1</td>
+<td>Isolates buzzer current draw from ESP32 GPIO to ensure electrical safety.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;2 &#226;€“ &#226;‚&#185;5</td>
+<td>$0.05 &#226;€“ $0.10</td>
+<td>Switched via 1k&#206;&#169; base resistor; protects ESP32 pin from overcurrent and inductive spikes.</td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td><strong>Base Resistor (Buzzer)</strong></td>
+<td>1.0 k&#206;&#169;, 1/4W Carbon Film Resistor</td>
+<td>1</td>
+<td>Limits base current into NPN driver transistor.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;1 &#226;€“ &#226;‚&#185;2</td>
+<td>$0.02 &#226;€“ $0.05</td>
+<td>Biases transistor into saturation mode (~2.6 mA base current).</td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td><strong>LED Limiting Resistors</strong></td>
+<td>220 &#206;&#169; or 330 &#206;&#169;, 1/4W Carbon Film Resistors</td>
+<td>3</td>
+<td>Protects ESP32 GPIOs and LEDs from excessive current.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;5 &#226;€“ &#226;‚&#185;10</td>
+<td>$0.06 &#226;€“ $0.12</td>
+<td>Limits LED forward current to safe ~5.9 mA at 3.3V logic.</td>
+</tr>
+<tr>
+<td><strong>12</strong></td>
+<td><strong>Solderless Breadboard</strong></td>
+<td>830-Point MB-102 Full Breadboard</td>
+<td>1</td>
+<td>Prototyping platform for plug-and-play solderless wiring.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;80 &#226;€“ &#226;‚&#185;130</td>
+<td>$1.00 &#226;€“ $1.60</td>
+<td>Accommodates ESP32 board, peripheral wiring, and power distribution rails.</td>
+</tr>
+<tr>
+<td><strong>13</strong></td>
+<td><strong>Dupont Jumper Wires</strong></td>
+<td>20cm Wires (10 Male-Female + 10 Male-Male)</td>
+<td>1 Set</td>
+<td>Interconnects RC522 header pins, breadboard rails, and ESP32.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;60 &#226;€“ &#226;‚&#185;90</td>
+<td>$0.70 &#226;€“ $1.10</td>
+<td>High-flexibility stranded jumper wires.</td>
+</tr>
+<tr>
+<td><strong>14</strong></td>
+<td><strong>USB Data Cable</strong></td>
+<td>Micro-USB (or USB-C depending on ESP32 board)</td>
+<td>1</td>
+<td>Supplies 5V bus power and provides bidirectional USB-UART serial link.</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;50 &#226;€“ &#226;‚&#185;90</td>
+<td>$0.60 &#226;€“ $1.10</td>
+<td>Must be a <strong>Data + Power cable</strong> (avoid power-only charging cables).</td>
+</tr>
+<tr>
+<td><strong>15</strong></td>
+<td><strong>Adhesive Card Labels</strong></td>
+<td>Self-Adhesive White Paper Labels</td>
+<td>1 Sheet</td>
+<td>Physical labelling for test cards (<code>RFID-88219</code>, <code>DUPLICATE-TEST</code>, etc.).</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;10 &#226;€“ &#226;‚&#185;20</td>
+<td>$0.12 &#226;€“ $0.25</td>
+<td>Prevents card mix-ups during multi-scenario live testing.</td>
+</tr>
+</tbody></table></div>
+
+<div class='callout callout-note page-break-inside-avoid'><p>*Price Disclaimer: All prices listed above represent approximate market prices from standard Indian electronics distributors and online retailers (Robocraze, Robu.in, Amazon.in) as of October 2026. Actual market prices may vary based on supplier, local taxes, board variant, and seller.*</p>
+</div>
+<hr class='doc-divider'>
+<h2 id='7-rfid-reader-selection' class='section-heading section-break'>7. RFID READER SELECTION</h2>
+<p class='doc-paragraph'>Selecting the appropriate RFID technology requires balancing protocol security, reading distance, logic-level compatibility, and system complexity.</p>
+<h3 id='71-detailed-rfid-technology-comparison' class='sub-heading'>7.1 Detailed RFID Technology Comparison</h3>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Evaluation Metric</th>
+<th><strong>RC522 (MFRC522)</strong></th>
+<th><strong>PN532 NFC Module</strong></th>
+<th><strong>RDM6300 (125 kHz)</strong></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Operating Frequency</strong></td>
+<td><strong>13.56 MHz (High Frequency)</strong></td>
+<td>13.56 MHz (High Frequency / NFC)</td>
+<td>125 kHz (Low Frequency)</td>
+</tr>
+<tr>
+<td><strong>Standard Supported</strong></td>
+<td><strong>ISO/IEC 14443 Type A</strong></td>
+<td>ISO 14443A/B, FeliCa, NFC P2P</td>
+<td>EM4100 / TK4100</td>
+</tr>
+<tr>
+<td><strong>Credential Types</strong></td>
+<td>MIFARE Classic 1K/4K, Ultralight, S50 fobs</td>
+<td>MIFARE, NTAG, Smartphone NFC Emulation</td>
+<td>125 kHz Read-Only ID Tags</td>
+</tr>
+<tr>
+<td><strong>Host Interface</strong></td>
+<td><strong>Hardware SPI</strong> (up to 10 Mbit/s), I2C, UART</td>
+<td>I2C, SPI, High-Speed UART (HSU)</td>
+<td>UART TTL (9600 baud)</td>
+</tr>
+<tr>
+<td><strong>Operating Voltage</strong></td>
+<td><strong>3.3V DC (Strict Requirement)</strong></td>
+<td>3.3V &#226;€“ 5.0V DC (selectable)</td>
+<td>5.0V DC</td>
+</tr>
+<tr>
+<td><strong>Reading Range</strong></td>
+<td><strong>~2.0 cm &#226;€“ 4.5 cm</strong> (Controlled tap distance)</td>
+<td>~2.5 cm &#226;€“ 5.0 cm</td>
+<td>~2.0 cm &#226;€“ 6.0 cm</td>
+</tr>
+<tr>
+<td><strong>Software Support</strong></td>
+<td>Extensive (<code>MFRC522.h</code> by miguelbalboa)</td>
+<td>Complex (<code>Adafruit_PN532</code>)</td>
+<td>Basic serial stream parsing</td>
+</tr>
+<tr>
+<td><strong>Hardware Setup</strong></td>
+<td>Fixed pinout, straight SPI wiring</td>
+<td>Requires onboard DIP switch bus selection</td>
+<td>Fixed serial output</td>
+</tr>
+<tr>
+<td><strong>Module Cost (INR)</strong></td>
+<td><strong>&#226;‚&#185;140 &#226;€“ &#226;‚&#185;200 ($1.70 &#226;€“ $2.40)</strong></td>
+<td>&#226;‚&#185;350 &#226;€“ &#226;‚&#185;600 ($4.20 &#226;€“ $7.20)</td>
+<td>&#226;‚&#185;150 &#226;€“ &#226;‚&#185;250 ($1.80 &#226;€“ $3.00)</td>
+</tr>
+<tr>
+<td><strong>Suitability for Prototype</strong></td>
+<td><strong>Optimal</strong> (Exact feature match)</td>
+<td>Overkill (Added cost &amp; configuration)</td>
+<td>Poor (Outdated 125 kHz; unencrypted)</td>
+</tr>
+</tbody></table></div>
+
+<h3 id='72-technical-justification-recommendation' class='sub-heading'>7.2 Technical Justification &amp; Recommendation</h3>
+<p class='doc-paragraph'>The <strong>MFRC522 (RC522)</strong> reader module is chosen as the definitive RFID solution for the VOTE-GUARD First Working Hardware Prototype:</p>
+<ol class='doc-list'>
+<li><strong>Academic Prototype Suitability:</strong> It is suitable for short-range RFID detection in a controlled prototype environment. The ~3 cm read zone mimics intentional voter card tapping while preventing accidental reads from neighboring booths.</li>
+<li><strong>Direct 3.3V Native Bus:</strong> The RC522 operates natively at 3.3V DC, matching the ESP32 microcontroller logic level perfectly without requiring level-shifting resistors or bidirectional ICs.</li>
+<li><strong>Firmware Maturity:</strong> The standard <code>MFRC522</code> driver provides reliable anticollision routines, UID extraction, and interrupt management, enabling rapid development without low-level register debugging.</li>
+<li><strong>Economic Feasibility:</strong> At approximately &#226;‚&#185;160, it provides maximum educational value per rupee.</li>
+</ol>
+<hr class='doc-divider'>
+<h2 id='8-microcontroller-selection' class='section-heading section-break'>8. MICROCONTROLLER SELECTION</h2>
+<p class='doc-paragraph'>The microcontroller serves as the central hardware coordinator. It must handle high-speed SPI transactions with the RFID reader, maintain a robust USB serial link, and actuate status indicators without pin contention.</p>
+<h3 id='81-controller-comparison-matrix' class='sub-heading'>8.1 Controller Comparison Matrix</h3>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Feature / Criteria</th>
+<th><strong>ESP32 NodeMCU DevKit V1</strong></th>
+<th><strong>Arduino Uno (R3 / ATmega328P)</strong></th>
+<th><strong>Arduino Nano (V3 / ATmega328P)</strong></th>
+<th><strong>Raspberry Pi Pico (RP2040)</strong></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Processor Architecture</strong></td>
+<td>32-bit Dual-Core Xtensa LX6</td>
+<td>8-bit AVR RISC</td>
+<td>8-bit AVR RISC</td>
+<td>32-bit Dual-Core ARM Cortex-M0+</td>
+</tr>
+<tr>
+<td><strong>Clock Speed</strong></td>
+<td><strong>240 MHz</strong></td>
+<td>16 MHz</td>
+<td>16 MHz</td>
+<td>133 MHz</td>
+</tr>
+<tr>
+<td><strong>Operating Logic Voltage</strong></td>
+<td><strong>3.3V DC Native</strong></td>
+<td>5.0V DC</td>
+<td>5.0V DC</td>
+<td>3.3V DC Native</td>
+</tr>
+<tr>
+<td><strong>RC522 Compatibility</strong></td>
+<td><strong>Direct SPI Plug-and-Play</strong></td>
+<td>Requires 5V-to-3.3V level shifters</td>
+<td>Requires 5V-to-3.3V level shifters</td>
+<td>Direct SPI Plug-and-Play</td>
+</tr>
+<tr>
+<td><strong>Hardware UARTs</strong></td>
+<td>3 Hardware Serial Ports</td>
+<td>1 Hardware Serial (shared with USB)</td>
+<td>1 Hardware Serial (shared with USB)</td>
+<td>2 Hardware Serial Ports</td>
+</tr>
+<tr>
+<td><strong>Wireless Connectivity</strong></td>
+<td><strong>Built-in Wi-Fi 802.11 b/g/n &amp; BLE</strong></td>
+<td>None</td>
+<td>None</td>
+<td>None (Pico W required)</td>
+</tr>
+<tr>
+<td><strong>Available GPIO Pins</strong></td>
+<td>30 / 36 Pins (VSPI + HSPI)</td>
+<td>14 Digital + 6 Analog</td>
+<td>14 Digital + 8 Analog</td>
+<td>26 Multi-function GPIOs</td>
+</tr>
+<tr>
+<td><strong>Form Factor</strong></td>
+<td>Breadboard-friendly DevKit</td>
+<td>Large development board</td>
+<td>Compact DIP-30</td>
+<td>Compact DIP-40</td>
+</tr>
+<tr>
+<td><strong>Approximate Cost (INR)</strong></td>
+<td><strong>&#226;‚&#185;350 &#226;€“ &#226;‚&#185;480 ($4.20 &#226;€“ $5.80)</strong></td>
+<td>&#226;‚&#185;450 &#226;€“ &#226;‚&#185;700 ($5.40 &#226;€“ $8.40)</td>
+<td>&#226;‚&#185;200 &#226;€“ &#226;‚&#185;320 ($2.40 &#226;€“ $3.80)</td>
+<td>&#226;‚&#185;350 &#226;€“ &#226;‚&#185;450 ($4.20 &#226;€“ $5.40)</td>
+</tr>
+<tr>
+<td><strong>Future Expansion Ready</strong></td>
+<td><strong>Yes (Cloud / IoT ready)</strong></td>
+<td>Limited to USB tethering</td>
+<td>Limited to USB tethering</td>
+<td>Moderate</td>
+</tr>
+</tbody></table></div>
+
+<h3 id='82-recommendation-esp32-nodemcu-devkit-v1-30-pin' class='sub-heading'>8.2 Recommendation: ESP32 NodeMCU DevKit V1 (30-Pin)</h3>
+<p class='doc-paragraph'>The <strong>ESP32 DevKit V1 (30-pin version)</strong> is selected as the recommended microcontroller for the prototype:</p>
+<ul class='doc-list'>
+<li><strong>Elimination of Level Shifting:</strong> Because the ESP32 operates natively at 3.3V, its SPI lines connect directly to the RC522. Connecting an Arduino Uno (5V logic) directly to an RC522 subjects the reader&#39;s input pins to 5V overvoltage, leading to heating, read errors, or permanent transceiver degradation.</li>
+<li><strong>USB-Serial Integration:</strong> The onboard CP2102 or CH340 USB-to-UART bridge delivers rock-solid, bidirectional serial communication over a single USB cable.</li>
+<li><strong>Investment Protection for Future Milestones:</strong> While the initial prototype relies on USB Serial, the ESP32 already possesses integrated Wi-Fi and Bluetooth. When the project progresses to multi-station wireless networking, the hardware will require <strong>zero replacement</strong>.</li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='9-physical-feedback-system' class='section-heading section-break'>9. PHYSICAL FEEDBACK SYSTEM</h2>
+<p class='doc-paragraph'>The sensory feedback system provides immediate, unambiguous physical confirmation at the polling station. It ensures that the voter and polling officer receive instantaneous sensory cues regardless of screen visibility.</p>
+<h3 id='91-verification-outcome-signaling-matrix' class='sub-heading'>9.1 Verification Outcome Signaling Matrix</h3>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Operational Event</th>
+<th>Visual Feedback (LEDs)</th>
+<th>Acoustic Feedback (Buzzer)</th>
+<th>System Status &amp; Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Card Tap Detected</strong></td>
+<td>Green LED brief blink (30 ms)</td>
+<td>Short click / chirp (30 ms)</td>
+<td>RF antenna energized; card UID captured successfully.</td>
+</tr>
+<tr>
+<td><strong>1. Valid Voter (Eligible)</strong></td>
+<td><strong>Green LED Solid ON</strong> (2.0 seconds)</td>
+<td><strong>Single 150 ms affirmative beep</strong> (clean tone)</td>
+<td>Voter is registered and has not previously voted; ballot issuance authorized.</td>
+</tr>
+<tr>
+<td><strong>2. Duplicate Attempt (Fraud)</strong></td>
+<td><strong>Red LED Rapid Strobe</strong> (50 ms ON / 50 ms OFF for 3.0 s)</td>
+<td><strong>Three sharp high-intensity alarm beeps</strong> (250 ms ON / 100 ms OFF &#195;— 3)</td>
+<td><strong>CRITICAL SECURITY ALERT:</strong> Elector has already voted. Immediate booth halt; supervisor alerted.</td>
+</tr>
+<tr>
+<td><strong>3. Unregistered Card</strong></td>
+<td><strong>Yellow LED Solid ON</strong> (2.0 seconds)</td>
+<td><strong>Double error buzz</strong> (200 ms ON / 100 ms OFF &#195;— 2)</td>
+<td>Credential UID not found in electoral roll; verification rejected.</td>
+</tr>
+<tr>
+<td><strong>4. Scan Error / Card Removed</strong></td>
+<td>All LEDs flash once (100 ms)</td>
+<td>Single low buzz (300 ms)</td>
+<td>Read corrupted or card pulled out prematurely; re-tap required.</td>
+</tr>
+</tbody></table></div>
+
+<h3 id='92-display-evaluation-why-no-display-is-needed-for-prototype-1' class='sub-heading'>9.2 Display Evaluation (Why No Display is Needed for Prototype 1)</h3>
+<ul class='doc-list'>
+<li><strong>OLED / LCD Screen Assessment:</strong> An external display (such as a 0.96&quot; I2C SSD1306 OLED or 16&#195;—2 LCD) was evaluated but is <strong>deliberately excluded from the First Prototype</strong>.</li>
+<li><strong>Rationale:</strong> The VOTE-GUARD host terminal already features a rich, responsive dashboard displaying voter photos, names, registration timestamps, live metrics, and high-visibility duplicate alert banners. Adding an auxiliary display increases BOM cost by ~&#226;‚&#185;200, adds complex I2C wiring, draws additional current from the 3.3V rail, and duplicates data already presented on the operator&#39;s primary screen.</li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='10-power-supply-electrical-requirements' class='section-heading section-break'>10. POWER SUPPLY &amp; ELECTRICAL REQUIREMENTS</h2>
+<h3 id='101-power-architecture-overview' class='sub-heading'>10.1 Power Architecture Overview</h3>
+<p class='doc-paragraph'>The prototype operates entirely from the host workstation&#39;s USB interface (+5.0V DC at up to 500 mA).</p>
+<pre class='code-block'><code class=''>Host Computer USB Port (+5.0V DC, 500mA max)
+       &#226;”‚
+       &#226;–&#188; (Micro-USB / Type-C Data Cable)
+ESP32 DevKit V1 Board
+  &#226;”œ&#226;”€&#226;”€ Microcontroller Core (+3.3V DC via on-board LDO Regulator)
+  &#226;”œ&#226;”€&#226;”€ 3.3V Power Rail Output Pin (3V3)
+  &#226;”‚     &#226;””&#226;”€&#226;”€ RC522 RFID Reader VCC pin (~15&#226;€“26 mA operating draw)
+  &#226;”œ&#226;”€&#226;”€ GPIO Control Outputs (3.3V Logic)
+  &#226;”‚     &#226;”œ&#226;”€&#226;”€ Green LED via 220&#206;&#169; Resistor (~5.9 mA)
+  &#226;”‚     &#226;”œ&#226;”€&#226;”€ Red LED via 220&#206;&#169; Resistor (~6.8 mA)
+  &#226;”‚     &#226;”œ&#226;”€&#226;”€ Yellow LED via 220&#206;&#169; Resistor (~5.9 mA)
+  &#226;”‚     &#226;””&#226;”€&#226;”€ NPN Base via 1k&#206;&#169; Resistor (~2.6 mA) &#226;”€&#226;”€&gt; Switches Buzzer
+  &#226;””&#226;”€&#226;”€ Common Ground (GND) Rail
+</code></pre>
+<h3 id='102-power-safety-regulator-variance-guidelines' class='sub-heading'>10.2 Power Safety &amp; Regulator Variance Guidelines</h3>
+<ol class='doc-list'>
+<li><strong>USB Bus Power:</strong> The complete prototype is powered via the USB connection to the host PC. No external power brick or lithium battery is needed for Prototype 1.</li>
+<li><strong>Strict 3.3V Rail for RC522:</strong> The RC522 module <strong>MUST</strong> be connected to the <code>3V3</code> power pin of the ESP32. Connecting RC522 VCC to the <code>VIN</code> or <code>5V</code> pin will destroy the MFRC522 IC.</li>
+<li><strong>Common Ground:</strong> All subsystems (ESP32, RC522, LEDs, buzzer driver) share a continuous, common electrical ground (GND) to maintain unified logic references.</li>
+<li><strong>Regulator Variance Awareness:</strong> Different commercial ESP32 DevKit boards utilize different Low Drop-Out (LDO) linear regulators (e.g., AMS1117-3.3, ME6211, or RT9013), with current limits varying between 250 mA and 800 mA. Because our complete peripheral load (RC522 + 1 active LED + transistor base) draws under 45 mA from the 3.3V rail, all standard DevKit regulators will operate well within safe thermal limits.</li>
+</ol>
+<hr class='doc-divider'>
+<h2 id='11-electrical-compatibility-safety' class='section-heading section-break'>11. ELECTRICAL COMPATIBILITY &amp; SAFETY</h2>
+<h3 id='111-esp32-gpio-selection-boot-strapping-pin-safety' class='sub-heading'>11.1 ESP32 GPIO Selection &amp; Boot-Strapping Pin Safety</h3>
+<p class='doc-paragraph'>The ESP32 features specialized multiplexed pins. Certain pins serve as <strong>boot-strapping (strapping) pins</strong> that dictate boot modes, flash voltage, and serial bootloader entry during power-on reset.</p>
+<div class='callout callout-warning page-break-inside-avoid'><p>[!CAUTION]</p>
+<p><strong>Boot-Strapping Pin Conflict Prevention:</strong></p>
+<li><strong>GPIO 0:</strong> Must be HIGH during normal boot. Attaching an external load can pull it LOW and force the ESP32 into ROM download mode.</li>
+<li><strong>GPIO 2:</strong> Must be left floating or pulled LOW during flashing. In many DevKits, it is hardwired to an onboard blue LED. Attaching external LED loads to GPIO 2 can disrupt boot stability.</li>
+<li><strong>GPIO 12 &amp; 15:</strong> Control flash voltage (MTDI) and boot debug output.</li>
+<li><strong>GPIO 34, 35, 36, 39:</strong> These pins are <strong>Input-Only (GPI)</strong> and have no internal pull-up/pull-down or output drivers. They cannot drive LEDs or buzzers.</li>
+<p><strong>Resolution:</strong> In this finalized design, <strong>all strapping pins and input-only pins are strictly avoided</strong>. The status indicators are assigned to dedicated, safe output GPIOs (<strong>GPIO 25, 26, 27, and 32</strong>).</p>
+</div>
+<h3 id='112-active-buzzer-electrical-safety-analysis' class='sub-heading'>11.2 Active Buzzer Electrical Safety Analysis</h3>
+<p class='doc-paragraph'>Standard 5V/3.3V active buzzers contain an internal electromagnetic coil and oscillation circuit. When energized, they draw between <strong>20 mA and 35 mA</strong>.</p>
+<p class='doc-paragraph'>The ESP32 datasheet specifies a recommended continuous GPIO current limit of <strong>12 mA</strong> (with an absolute maximum rating of 40 mA). Driving a buzzer directly from an ESP32 GPIO can result in:</p>
+<ul class='doc-list'>
+<li>Significant voltage sag on the 3.3V internal rail.</li>
+<li>Thermal stress on the microcontroller&#39;s internal output FETs.</li>
+<li>High-voltage inductive kickback (back-EMF) spikes when switched off.</li>
+</ul>
+<p class='doc-paragraph'><strong>Engineering Safety Solution:</strong></p>
+<p class='doc-paragraph'>The buzzer circuit is driven using a <strong>low-cost NPN transistor switch (BC547 or 2N2222)</strong>:</p>
+<ul class='doc-list'>
+<li><strong>Base:</strong> Connected to ESP32 <strong>GPIO 32</strong> through a <strong>1.0 k&#206;&#169; current-limiting resistor</strong> (draws only ~2.6 mA from the GPIO).</li>
+<li><strong>Collector:</strong> Connected to the negative terminal of the active buzzer.</li>
+<li><strong>Emitter:</strong> Connected directly to Common Ground (GND).</li>
+<li><strong>Buzzer Positive:</strong> Connected to the ESP32 <code>VIN</code> (5V USB rail) or <code>3V3</code> rail.</li>
+</ul>
+<p class='doc-paragraph'>*(Note: If a pre-assembled 3-pin Active Buzzer Module is purchased, it already contains an onboard S8050 NPN transistor and base resistor on its PCB, allowing direct signal connection to GPIO 32).*</p>
+<hr class='doc-divider'>
+<h2 id='12-wiring-pinout-specification' class='section-heading section-break'>12. WIRING &amp; PINOUT SPECIFICATION</h2>
+<div class="diagram-container page-break-inside-avoid">
+  <div class="diagram-header">
+    <div class="diagram-title-group">
+      <span class="diagram-badge">FIGURE 02</span>
+      <span class="diagram-title">Physical Wiring & Pinout Architecture (ESP32 DevKit V1)</span>
+    </div>
+    <span class="diagram-tag">[SAFE HARDWARE PINOUT]</span>
+  </div>
+  <div class="diagram-svg-wrapper">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 620" width="100%" height="620">
+  <defs>
+    <marker id="wArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#ffffff" rx="8"/>
+
+  <!-- Title Banner -->
+  <rect x="20" y="15" width="900" height="42" rx="6" fill="#0f172a"/>
+  <text x="470" y="42" font-family="Segoe UI, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">PHYSICAL WIRING &amp; PINOUT ARCHITECTURE â€” ESP32 DevKit V1 (30-Pin)</text>
+
+  <!-- Central ESP32 Board Representation -->
+  <g transform="translate(350, 75)">
+    <rect x="0" y="0" width="240" height="480" rx="10" fill="#1e293b" stroke="#0f172a" stroke-width="2.5"/>
+    
+    <!-- Microcontroller Chip -->
+    <rect x="40" y="120" width="160" height="150" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <text x="120" y="185" font-family="Segoe UI, sans-serif" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">ESP32</text>
+    <text x="120" y="205" font-family="Segoe UI, sans-serif" font-size="10" fill="#38bdf8" text-anchor="middle">WROOM-32 Core</text>
+    <text x="120" y="222" font-family="Segoe UI, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">3.3V Logic Level</text>
+
+    <!-- USB Port at bottom -->
+    <rect x="80" y="455" width="80" height="25" rx="4" fill="#94a3b8"/>
+    <text x="120" y="472" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#0f172a" text-anchor="middle">USB to PC</text>
+
+    <!-- Onboard 3.3V Regulator Note -->
+    <rect x="40" y="40" width="160" height="50" rx="4" fill="#334155"/>
+    <text x="120" y="60" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#f8fafc" text-anchor="middle">AMS1117 3.3V Regulator</text>
+    <text x="120" y="78" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#38bdf8" text-anchor="middle">Powers Core &amp; RC522 (3V3)</text>
+
+    <!-- Left Pin Labels (Selected) -->
+    <text x="12" y="115" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#38bdf8">3V3</text>
+    <text x="12" y="145" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#94a3b8">GND</text>
+    <text x="12" y="180" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#ffffff">D4 (GPIO 4)</text>
+    <text x="12" y="220" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#ffffff">D5 (GPIO 5)</text>
+    <text x="12" y="260" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#ffffff">D18 (SCK)</text>
+    <text x="12" y="300" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#ffffff">D19 (MISO)</text>
+    <text x="12" y="340" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#ffffff">D23 (MOSI)</text>
+
+    <!-- Right Pin Labels (Selected) -->
+    <text x="228" y="180" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#4ade80" text-anchor="end">D25 (GPIO 25)</text>
+    <text x="228" y="220" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#f87171" text-anchor="end">D26 (GPIO 26)</text>
+    <text x="228" y="260" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#facc15" text-anchor="end">D27 (GPIO 27)</text>
+    <text x="228" y="300" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#38bdf8" text-anchor="end">D32 (GPIO 32)</text>
+    <text x="228" y="340" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="end">GND</text>
+  </g>
+
+  <!-- Left: RC522 RFID Module -->
+  <g transform="translate(30, 110)">
+    <rect x="0" y="0" width="240" height="340" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="120" y="30" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">RC522 RFID Reader</text>
+    <text x="120" y="48" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">STRICT 3.3V DC (DO NOT USE 5V)</text>
+
+    <!-- Pin Connections Table on Module -->
+    <g transform="translate(15, 65)">
+      <rect x="0" y="0" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="17" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">3.3V (VCC)</text>
+      <text x="200" y="17" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="end">Power In (3.3V)</text>
+
+      <rect x="0" y="35" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="52" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">RST</text>
+      <text x="200" y="52" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="end">Reset Line</text>
+
+      <rect x="0" y="70" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="87" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">GND</text>
+      <text x="200" y="87" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="end">Common Ground</text>
+
+      <rect x="0" y="105" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="122" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">IRQ</text>
+      <text x="200" y="122" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#64748b" text-anchor="end">Unused (NC)</text>
+
+      <rect x="0" y="140" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="157" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">MISO</text>
+      <text x="200" y="157" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="end">SPI MISO</text>
+
+      <rect x="0" y="175" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="192" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">MOSI</text>
+      <text x="200" y="192" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="end">SPI MOSI</text>
+
+      <rect x="0" y="210" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="227" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">SCK</text>
+      <text x="200" y="227" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="end">SPI Clock</text>
+
+      <rect x="0" y="245" width="210" height="25" rx="3" fill="#ffffff" stroke="#93c5fd"/>
+      <text x="10" y="262" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#1e3a8a">SDA (SS)</text>
+      <text x="200" y="262" font-family="Segoe UI, sans-serif" font-size="9" fill="#2563eb" text-anchor="end">Slave Select</text>
+    </g>
+  </g>
+
+  <!-- Wires connecting RC522 to ESP32 -->
+  <path d="M 270 185 L 350 185" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#wArr)"/> <!-- 3.3V -->
+  <path d="M 270 215 L 350 255" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#wArr)"/> <!-- RST -->
+  <path d="M 270 250 L 350 220" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#wArr)"/> <!-- GND -->
+  <path d="M 270 320 L 350 375" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#wArr)"/> <!-- MISO -->
+  <path d="M 270 355 L 350 415" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#wArr)"/> <!-- MOSI -->
+  <path d="M 270 390 L 350 335" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#wArr)"/> <!-- SCK -->
+  <path d="M 270 425 L 350 295" fill="none" stroke="#0891b2" stroke-width="2" marker-end="url(#wArr)"/> <!-- SDA/CS -->
+
+  <!-- Right: Physical Feedback Wiring Components -->
+  <g transform="translate(670, 95)">
+    <!-- Green LED Box -->
+    <rect x="0" y="0" width="240" height="85" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+    <text x="20" y="25" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#14532d">GREEN LED (Valid Voter)</text>
+    <text x="20" y="45" font-family="Segoe UI, sans-serif" font-size="9" fill="#166534">Anode (+) to 220Î© Resistor to GPIO 25</text>
+    <text x="20" y="65" font-family="Segoe UI, sans-serif" font-size="9" fill="#166534">Cathode (âˆ’) to ESP32 Common GND</text>
+
+    <!-- Red LED Box -->
+    <rect x="0" y="105" width="240" height="85" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.8"/>
+    <text x="20" y="130" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#991b1b">RED LED (Duplicate Attempt)</text>
+    <text x="20" y="150" font-family="Segoe UI, sans-serif" font-size="9" fill="#b91c1c">Anode (+) to 220Î© Resistor to GPIO 26</text>
+    <text x="20" y="170" font-family="Segoe UI, sans-serif" font-size="9" fill="#b91c1c">Cathode (âˆ’) to ESP32 Common GND</text>
+
+    <!-- Yellow LED Box -->
+    <rect x="0" y="210" width="240" height="85" rx="6" fill="#fefce8" stroke="#ca8a04" stroke-width="1.8"/>
+    <text x="20" y="235" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#713f12">YELLOW LED (Unregistered)</text>
+    <text x="20" y="255" font-family="Segoe UI, sans-serif" font-size="9" fill="#854d0e">Anode (+) to 220Î© Resistor to GPIO 27</text>
+    <text x="20" y="275" font-family="Segoe UI, sans-serif" font-size="9" fill="#854d0e">Cathode (âˆ’) to ESP32 Common GND</text>
+
+    <!-- Buzzer Box -->
+    <rect x="0" y="315" width="240" height="110" rx="6" fill="#f8fafc" stroke="#334155" stroke-width="1.8"/>
+    <text x="20" y="340" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#0f172a">ACTIVE BUZZER (Audio Siren)</text>
+    <text x="20" y="360" font-family="Segoe UI, sans-serif" font-size="9" font-weight="bold" fill="#2563eb">Driven via GPIO 32</text>
+    <text x="20" y="378" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#475569">Safety Driver: BC547 NPN Transistor</text>
+    <text x="20" y="394" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#475569">Base Resistor: 1 kÎ© (Protects GPIO)</text>
+    <text x="20" y="410" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#475569">Emitter to GND | Collector to Buzzer (âˆ’)</text>
+  </g>
+
+  <!-- Wires connecting ESP32 to Feedback Peripherals -->
+  <path d="M 590 255 L 670 135" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#wArr)"/> <!-- GPIO 25 -->
+  <path d="M 590 295 L 670 240" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#wArr)"/> <!-- GPIO 26 -->
+  <path d="M 590 335 L 670 345" fill="none" stroke="#ca8a04" stroke-width="2" marker-end="url(#wArr)"/> <!-- GPIO 27 -->
+  <path d="M 590 375 L 670 450" fill="none" stroke="#0284c7" stroke-width="2" marker-end="url(#wArr)"/> <!-- GPIO 32 -->
+
+  <!-- Safety Callout at bottom -->
+  <rect x="30" y="565" width="880" height="42" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="470" y="583" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">TECHNICAL INTEGRITY CONFIRMATION:</text>
+  <text x="470" y="598" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#1e40af" text-anchor="middle">All selected GPIOs (4, 5, 18, 19, 23, 25, 26, 27, 32) strictly avoid ESP32 boot-strapping pins (0, 2, 12, 15) and input-only pins (34-39).</text>
+</svg>
+  </div>
+  <div class="diagram-caption">
+    <strong>Figure 02:</strong> Detailed schematic mapping RC522 SPI lines, status LEDs with 220Î© resistors, and NPN-buffered active buzzer to safe ESP32 GPIOs.
+  </div>
+</div>
+<div class='callout callout-note page-break-inside-avoid'><p><strong>Assumed Board Variant:</strong> ESP32 NodeMCU DevKit V1 (Standard 30-Pin Version).</p>
+<p>If using a 36-pin or 38-pin ESP32 variant, verify the physical pin locations against the GPIO numbers listed below. The GPIO assignments remain identical in firmware.</p>
+</div>
+<h3 id='121-master-wiring-interconnection-table' class='sub-heading'>12.1 Master Wiring Interconnection Table</h3>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Component Subsystem</th>
+<th>Peripheral Terminal</th>
+<th>ESP32 Board Pin</th>
+<th>Assigned GPIO</th>
+<th>Voltage / Logic Level</th>
+<th>Functional Description</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>RFID Reader (RC522)</strong></td>
+<td><strong>3.3V (VCC)</strong></td>
+<td><strong>3V3</strong></td>
+<td>3.3V Power Rail</td>
+<td>+3.3V DC (Regulated)</td>
+<td>Main DC power for RFID module</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>GND</strong></td>
+<td><strong>GND</strong></td>
+<td>Common Ground</td>
+<td>0V</td>
+<td>Ground reference</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>RST</strong></td>
+<td><strong>D4</strong></td>
+<td>GPIO 4</td>
+<td>3.3V Logic</td>
+<td>Hardware Reset line for RC522</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>MISO</strong></td>
+<td><strong>D19</strong></td>
+<td>GPIO 19 (VSPI MISO)</td>
+<td>3.3V Logic</td>
+<td>SPI Master In / Slave Out (data to ESP32)</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>MOSI</strong></td>
+<td><strong>D23</strong></td>
+<td>GPIO 23 (VSPI MOSI)</td>
+<td>3.3V Logic</td>
+<td>SPI Master Out / Slave In (data from ESP32)</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>SCK</strong></td>
+<td><strong>D18</strong></td>
+<td>GPIO 18 (VSPI SCK)</td>
+<td>3.3V Logic</td>
+<td>SPI Synchronous Serial Clock</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>SDA (SS / CS)</strong></td>
+<td><strong>D5</strong></td>
+<td>GPIO 5 (VSPI SS)</td>
+<td>3.3V Logic</td>
+<td>SPI Chip Select (Slave Select)</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>IRQ</strong></td>
+<td>*Unconnected*</td>
+<td>&#226;€”</td>
+<td>&#226;€”</td>
+<td>Not connected (polled driver utilized)</td>
+</tr>
+<tr>
+<td><strong>Green Status LED</strong></td>
+<td>Anode (+)</td>
+<td>Via 220&#206;&#169; Resistor</td>
+<td><strong>GPIO 25</strong></td>
+<td>3.3V Logic</td>
+<td>High = Valid Voter Verified</td>
+</tr>
+<tr>
+<td></td>
+<td>Cathode (&#226;ˆ’)</td>
+<td><strong>GND</strong></td>
+<td>Common Ground</td>
+<td>0V</td>
+<td>Ground return</td>
+</tr>
+<tr>
+<td><strong>Red Status LED</strong></td>
+<td>Anode (+)</td>
+<td>Via 220&#206;&#169; Resistor</td>
+<td><strong>GPIO 26</strong></td>
+<td>3.3V Logic</td>
+<td>High = Duplicate Attempt Alert</td>
+</tr>
+<tr>
+<td></td>
+<td>Cathode (&#226;ˆ’)</td>
+<td><strong>GND</strong></td>
+<td>Common Ground</td>
+<td>0V</td>
+<td>Ground return</td>
+</tr>
+<tr>
+<td><strong>Yellow Status LED</strong></td>
+<td>Anode (+)</td>
+<td>Via 220&#206;&#169; Resistor</td>
+<td><strong>GPIO 27</strong></td>
+<td>3.3V Logic</td>
+<td>High = Unregistered Voter ID</td>
+</tr>
+<tr>
+<td></td>
+<td>Cathode (&#226;ˆ’)</td>
+<td><strong>GND</strong></td>
+<td>Common Ground</td>
+<td>0V</td>
+<td>Ground return</td>
+</tr>
+<tr>
+<td><strong>Active Buzzer</strong></td>
+<td>Positive (+)</td>
+<td><strong>VIN</strong> or <strong>3V3</strong></td>
+<td>Power Rail</td>
+<td>+5.0V / +3.3V DC</td>
+<td>Buzzer positive supply</td>
+</tr>
+<tr>
+<td>*(via BC547 NPN)*</td>
+<td>Negative (&#226;ˆ’)</td>
+<td>Transistor Collector</td>
+<td>&#226;€”</td>
+<td>Switched Ground</td>
+<td>Switched path to ground</td>
+</tr>
+<tr>
+<td></td>
+<td>Base Resistor</td>
+<td>Via 1k&#206;&#169; Resistor</td>
+<td><strong>GPIO 32</strong></td>
+<td>3.3V Logic</td>
+<td>High = Buzzer Sounding Active</td>
+</tr>
+<tr>
+<td></td>
+<td>Transistor Emitter</td>
+<td><strong>GND</strong></td>
+<td>Common Ground</td>
+<td>0V</td>
+<td>Ground return</td>
+</tr>
+<tr>
+<td><strong>Host PC Link</strong></td>
+<td>Micro-USB Jack</td>
+<td>USB Port</td>
+<td>GPIO 1 (TX) / 3 (RX)</td>
+<td>5V Bus / USB Serial</td>
+<td>Power input and serial communication</td>
+</tr>
+</tbody></table></div>
+
+<hr class='doc-divider'>
+<h2 id='13-hardware-to-software-communication-flow' class='section-heading section-break'>13. HARDWARE-TO-SOFTWARE COMMUNICATION FLOW</h2>
+<p class='doc-paragraph'>The communication architecture links physical events at the polling booth to the VOTE-GUARD software running on the host workstation.</p>
+<h3 id='131-protocol-specification-planned-new' class='sub-heading'>13.1 Protocol Specification <code><span class="badge badge-planned">[PLANNED / NEW]</span></code></h3>
+<ul class='doc-list'>
+<li><strong>Physical Layer:</strong> USB 2.0 full-speed virtual serial port via CP2102/CH340 interface.</li>
+<li><strong>Baud Rate:</strong> 115,200 baud, 8 data bits, no parity, 1 stop bit (8-N-1).</li>
+<li><strong>Upstream Message (Hardware to Computer):</strong></li>
+</ul>
+<p class='doc-paragraph'>  When an RFID card is tapped, the ESP32 transmits a clean, newline-terminated ASCII string:</p>
+<p class='doc-paragraph'>  <code>`</code>text</p>
+<p class='doc-paragraph'>  UID:8A4F123B\n</p>
+<p class='doc-paragraph'>  <code>`</code></p>
+<ul class='doc-list'>
+<li><strong>Downstream Command (Computer to Hardware):</strong></li>
+</ul>
+<p class='doc-paragraph'>  Following verification evaluation in the VOTE-GUARD software, the host returns a single ASCII command byte:</p>
+<ul class='doc-list'>
+<li><code>&#39;V&#39;</code> &#226;€” <strong>Valid:</strong> Triggers Green LED for 2.0 seconds and single affirmative tone.</li>
+<li><code>&#39;D&#39;</code> &#226;€” <strong>Duplicate:</strong> Triggers flashing Red LED for 3.0 seconds and triple alarm siren.</li>
+<li><code>&#39;U&#39;</code> &#226;€” <strong>Unregistered:</strong> Triggers Yellow LED for 2.0 seconds and double error buzz.</li>
+</ul>
+<hr class='doc-divider'>
+<h2 id='14-end-to-end-hardware-workflow' class='section-heading section-break'>14. END-TO-END HARDWARE WORKFLOW</h2>
+<pre class='code-block'><code class=''>+---------------------------------------------------------------------------------------------------+
+|                            STEP-BY-STEP SYSTEM OPERATIONAL WORKFLOW                               |
++---------------------------------------------------------------------------------------------------+
+
+ 1. SYSTEM INITIALIZATION &amp; SELF-TEST
+    &#226;€&#162; Hardware: ESP32 boots upon USB cable insertion, initializes SPI bus, resets RC522.
+    &#226;€&#162; Hardware: Self-test routine momentarily flashes Green, Red, Yellow LEDs and sounds a 50 ms chirp.
+    &#226;€&#162; Software [IMPLEMENTED]: Officer launches VOTE-GUARD dashboard in workstation browser.
+    &#226;€&#162; Software [PLANNED / NEW]: Web Serial connection opens COM port at 115200 baud.
+
+ 2. CARD PRESENTATION
+    &#226;€&#162; Physical: Voter taps RFID smart card within 3 cm of the RC522 scanning antenna.
+
+ 3. RF COUPLING &amp; UID EXTRACTION
+    &#226;€&#162; Hardware: RC522 powers card via 13.56 MHz carrier, anticollision routine isolates UID.
+    &#226;€&#162; Hardware: ESP32 captures 4-byte UID and sounds a momentary 30 ms chirp acknowledging detection.
+
+ 4. SERIAL TRANSMISSION
+    &#226;€&#162; Hardware [PLANNED / NEW]: ESP32 formats UID and sends &quot;UID:&lt;HEX_STRING&gt;\n&quot; over USB Serial.
+
+ 5. SOFTWARE RECEPTION &amp; REGISTRY LOOKUP
+    &#226;€&#162; Software [PLANNED / NEW]: Browser serial listener intercepts UID string.
+    &#226;€&#162; Software [IMPLEMENTED]: Ingests UID, strips prefix, and executes verifyVoter(uid).
+    &#226;€&#162; Software [IMPLEMENTED]: Queries voter registry (browser localStorage in current prototype).
+
+ 6. ELIGIBILITY &amp; DUPLICATE EVALUATION
+    &#226;€&#162; Case A [VALID]: Voter registered AND has_voted == false.
+      - Software: Marks has_voted = true, increments Recorded Count, renders green confirmation.
+    &#226;€&#162; Case B [DUPLICATE]: Voter registered AND has_voted == true.
+      - Software: Increments Duplicate Count, logs incident, renders high-intensity red alert banner.
+    &#226;€&#162; Case C [UNREGISTERED]: Credential UID not found in registry.
+      - Software: Displays error notification (&quot;Voter not found in registry&quot;).
+
+ 7. STATUS COMMAND DISPATCH
+    &#226;€&#162; Software [PLANNED / NEW]: Sends feedback byte over USB Serial:
+      - &#39;V&#39; for Valid | &#39;D&#39; for Duplicate | &#39;U&#39; for Unregistered.
+
+ 8. PHYSICAL ACTUATION (HARDWARE)
+    &#226;€&#162; Hardware [PLANNED / NEW]: ESP32 parses incoming byte:
+      - If &#39;V&#39;: Green LED ON (2.0s) + single affirmative tone.
+      - If &#39;D&#39;: Red LED rapid strobe (3.0s) + triple loud security alarm siren.
+      - If &#39;U&#39;: Yellow LED ON (2.0s) + double error buzz.
+
+ 9. OFFICER VERIFICATION ACTION
+    &#226;€&#162; Physical: Officer checks physical LEDs and dashboard confirmation.
+    &#226;€&#162; Action: If Valid, issues ballot paper. If Duplicate, halts voting and flags security.
+
+ 10. STATION DEBOUNCE &amp; IDLE RESET
+    &#226;€&#162; Hardware: ESP32 enforces a 1.5-second scan lockout to prevent re-reading the same card.
+    &#226;€&#162; Hardware: LEDs extinguish; station returns to idle ready for the next voter.
+</code></pre>
+<hr class='doc-divider'>
+<h2 id='15-purchasing-checklist' class='section-heading section-break'>15. PURCHASING CHECKLIST</h2>
+<p class='doc-paragraph'>This checklist isolates the components that must be procured to construct the First Working Hardware Prototype:</p>
+<div class='table-wrapper page-break-inside-avoid'><table class='doc-table'>
+<thead><tr>
+<th>Item</th>
+<th>Component Description</th>
+<th>Recommended Qty</th>
+<th>Priority</th>
+<th>Approx Cost (INR)</th>
+<th>Essential Purchasing Tips</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>ESP32 NodeMCU DevKit V1 (30-Pin)</td>
+<td>1</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;380</td>
+<td>Confirm pre-soldered header pins (avoids soldering).</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>RC522 13.56 MHz RFID Module Kit</td>
+<td>1</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;160</td>
+<td>Kit should include 1 card and 1 keyfob with straight pin header.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>MIFARE Classic 1K Cards (13.56 MHz)</td>
+<td>5</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;80</td>
+<td>Ensure cards are 13.56 MHz (do <strong>not</strong> buy 125 kHz EM4100).</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>MIFARE Classic 1K Keyfobs (13.56 MHz)</td>
+<td>3</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;40</td>
+<td>Blue ABS keyfobs for dedicated duplicate/unregistered test cases.</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>5mm Diffused LEDs (1 Green, 1 Red, 1 Yellow)</td>
+<td>3</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;10</td>
+<td>Diffused casing provides superior viewing angles.</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>Active Buzzer (5V / 3.3V)</td>
+<td>1</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;20</td>
+<td>Verify it is <strong>Active</strong> (has sealed sticker on top; sounds with DC).</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>BC547 or 2N2222 NPN Transistor</td>
+<td>1</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;3</td>
+<td>Standard TO-92 general purpose NPN transistor.</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td>Resistor Assortment (3&#195;— 220&#206;&#169;, 1&#195;— 1k&#206;&#169;)</td>
+<td>4</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;5</td>
+<td>Standard 1/4 Watt carbon film resistors.</td>
+</tr>
+<tr>
+<td><strong>9</strong></td>
+<td>MB-102 Solderless Breadboard (830 points)</td>
+<td>1</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;100</td>
+<td>Full length breadboard fits ESP32 and all components cleanly.</td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td>Dupont Jumper Wires (10 M-F, 10 M-M)</td>
+<td>1 Pack</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;70</td>
+<td>20cm length provides comfortable spacing.</td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td>Micro-USB / Type-C Data Cable</td>
+<td>1</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;60</td>
+<td>Verify <strong>Data Sync</strong> capability (not charge-only).</td>
+</tr>
+<tr>
+<td><strong>12</strong></td>
+<td>Adhesive Paper Labels</td>
+<td>1 Sheet</td>
+<td><strong><span class="badge badge-buy">[BUY NOW]</span></strong></td>
+<td>&#226;‚&#185;10</td>
+<td>For labelling test cards with voter IDs.</td>
+</tr>
+<tr>
+<td><strong>13</strong></td>
+<td>0.96&quot; I2C OLED Display (SSD1306)</td>
+<td>1</td>
+<td><strong><span class="badge badge-opt">[OPTIONAL]</span></strong></td>
+<td>&#226;‚&#185;200</td>
+<td>Defer until initial prototype verification is complete.</td>
+</tr>
+<tr>
+<td><strong>14</strong></td>
+<td>ABS Project Box Enclosure</td>
+<td>1</td>
+<td><strong><span class="badge badge-fut">[FUTURE]</span></strong></td>
+<td>&#226;‚&#185;150</td>
+<td>Defer until final academic demonstration casing.</td>
+</tr>
+</tbody></table></div>
+
+<hr class='doc-divider'>
+<h2 id='16-recommended-first-prototype-hardware-stack' class='section-heading section-break'>16. RECOMMENDED FIRST PROTOTYPE HARDWARE STACK</h2>
+<p class='doc-paragraph'>The final recommended hardware configuration for the VOTE-GUARD First Working Hardware Prototype comprises:</p>
+<ol class='doc-list'>
+<li><strong>Microcontroller:</strong> <strong>ESP32 NodeMCU DevKit V1 (30-Pin)</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* Direct native 3.3V logic compatibility with RC522, integrated USB-UART serial engine, and built-in Wi-Fi for future backend expansion.</p>
+<ol class='doc-list'>
+<li><strong>RFID Reader:</strong> <strong>MFRC522 (RC522) 13.56 MHz RFID Reader Module</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* Inexpensive, reliable short-range reading, direct 3.3V SPI operation, and industry-standard library support.</p>
+<ol class='doc-list'>
+<li><strong>RFID Test Credentials:</strong> <strong>MIFARE Classic 1K Cards (5 pcs) + Keyfobs (3 pcs)</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* High-frequency 13.56 MHz passive credentials with unique factory UIDs, ideal for testing valid, duplicate, and unregistered scenarios.</p>
+<ol class='doc-list'>
+<li><strong>Green Status LED (5mm):</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* Direct affirmative visual confirmation of an eligible, authorized voter.</p>
+<ol class='doc-list'>
+<li><strong>Red Status LED (5mm):</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* High-intensity visual warning dedicated to intercepting duplicate voting attempts.</p>
+<ol class='doc-list'>
+<li><strong>Yellow Status LED (5mm):</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* Unambiguous visual differentiation for unregistered or invalid credentials.</p>
+<ol class='doc-list'>
+<li><strong>Active Piezo Buzzer:</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* Generates immediate acoustic alerts for fraud attempts without requiring complex frequency synthesis code.</p>
+<ol class='doc-list'>
+<li><strong>NPN Transistor Driver (BC547 / 2N2222) + 1k&#206;&#169; Resistor:</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* Protects ESP32 GPIO from buzzer current draw and inductive switching spikes.</p>
+<ol class='doc-list'>
+<li><strong>LED Resistors (220&#206;&#169;, 3 pcs):</strong></li>
+</ol>
+<p class='doc-paragraph'>   *Reason:* Limits forward current to safe levels (~5.9 mA), protecting ESP32 GPIOs and LEDs.</p>
+<ol class='doc-list'>
+<li><strong>Solderless Breadboard (830 points):</strong></li>
+</ol>
+<p class='doc-paragraph'>    *Reason:* Rapid, reliable, solder-free component assembly with easy multimeter probe access.</p>
+<ol class='doc-list'>
+<li><strong>Dupont Jumper Wires (10 M-F, 10 M-M):</strong></li>
+</ol>
+<p class='doc-paragraph'>    *Reason:* Flexible interconnection between the RC522 pin header, breadboard rails, and ESP32.</p>
+<ol class='doc-list'>
+<li><strong>USB Data Cable:</strong></li>
+</ol>
+<p class='doc-paragraph'>    *Reason:* Delivers single-cable 5V power and bidirectional Serial communication between the hardware and host PC.</p>
+<hr class='doc-divider'>
+<h2 id='17-estimated-prototype-cost' class='section-heading section-break'>17. ESTIMATED PROTOTYPE COST</h2>
+<ul class='doc-list'>
+<li><strong>Estimated Cost (Indian Rupees):</strong> <strong>&#226;‚&#185;850 &#226;€“ &#226;‚&#185;1,180</strong></li>
+<li><strong>Estimated Cost (US Dollars Equivalent):</strong> <strong>$10.20 &#226;€“ $14.20</strong></li>
+</ul>
+<div class='callout callout-note page-break-inside-avoid'><p>*Market Assessment: This budget represents the complete out-of-pocket procurement cost for all 15 essential items. The prototype remains extraordinarily cost-effective while delivering robust physical verification and fraud interception.*</p>
+</div>
+<hr class='doc-divider'>
+<h2 id='18-future-hardware-expansion-future-optional' class='section-heading section-break'>18. FUTURE HARDWARE EXPANSION <code><span class="badge badge-future">[FUTURE / OPTIONAL]</span></code></h2>
+<p class='doc-paragraph'>As VOTE-GUARD evolves beyond the initial laboratory prototype into a connected election platform, the hardware architecture accommodates the following modular extensions:</p>
+<ol class='doc-list'>
+<li><strong>Dedicated Voter-Facing OLED Display:</strong></li>
+</ol>
+<p class='doc-paragraph'>   Connecting a 0.96&quot; I2C SSD1306 OLED screen using the reserved I2C pins (<strong>GPIO 21 SDA / GPIO 22 SCL</strong>) to present voter guidance (&quot;PLEASE TAP CARD&quot;, &quot;VERIFIED&quot;).</p>
+<ol class='doc-list'>
+<li><strong>Wi-Fi / Ethernet Network Integration:</strong></li>
+</ol>
+<p class='doc-paragraph'>   Transitioning from tethered USB Serial to encrypted HTTPS/WebSockets using the ESP32&#39;s onboard Wi-Fi to sync with a centralized backend server.</p>
+<ol class='doc-list'>
+<li><strong>Multi-Factor Biometric Scanner:</strong></li>
+</ol>
+<p class='doc-paragraph'>   Adding an optical fingerprint sensor (e.g., R307 / AS608 via secondary hardware UART2 on GPIO 16/17) for two-factor voter verification.</p>
+<ol class='doc-list'>
+<li><strong>Battery Backup Power (UPS):</strong></li>
+</ol>
+<p class='doc-paragraph'>   Integrating a TP4056 lithium battery charging module and an 18650 cell to safeguard against polling station power interruptions.</p>
+<ol class='doc-list'>
+<li><strong>Tamper-Evident Physical Enclosure:</strong></li>
+</ol>
+<p class='doc-paragraph'>   A custom 3D-printed or laser-cut acrylic case featuring tamper-switch interlocks that log unauthorized opening attempts into audit storage.</p>
+<hr class='doc-divider'>
+<h2 id='19-hardware-limitations' class='section-heading section-break'>19. HARDWARE LIMITATIONS</h2>
+<p class='doc-paragraph'>To maintain academic rigor and transparent engineering documentation, the limitations of the first hardware prototype are explicitly documented:</p>
+<ol class='doc-list'>
+<li><strong>UID-Only Verification:</strong></li>
+</ol>
+<p class='doc-paragraph'>   The prototype reads only the factory-burned 4-byte or 7-byte UID. It does not utilize cryptographic key authentication (Crypto-1) or encrypted data blocks. Therefore, UID cloning is possible with specialized writable cards (UID changers/Chinese Magic Cards) in an untrusted environment.</p>
+<ol class='doc-list'>
+<li><strong>Tethered Workstation Operation:</strong></li>
+</ol>
+<p class='doc-paragraph'>   The prototype depends on an active USB cable connection to the host PC for power and serial data processing. It cannot operate as an autonomous standalone device.</p>
+<ol class='doc-list'>
+<li><strong>Single-Station Scope:</strong></li>
+</ol>
+<p class='doc-paragraph'>   Because the backend is not yet finalized, duplicate detection in Prototype 1 occurs within the host computer&#39;s local session. Cross-booth duplicate prevention requires the future centralized backend network.</p>
+<ol class='doc-list'>
+<li><strong>Prototyping Environment Fragility:</strong></li>
+</ol>
+<p class='doc-paragraph'>   Breadboard jumper connections are susceptible to accidental dislodging during demonstration handling compared to a custom Printed Circuit Board (PCB).</p>
+<hr class='doc-divider'>
+<h2 id='20-conclusion' class='section-heading section-break'>20. CONCLUSION</h2>
+<p class='doc-paragraph'>The hardware specification and Bill of Materials outlined in this document establish a solid, practical, and highly cost-effective foundation for the <strong>VOTE-GUARD First Working Hardware Prototype</strong>.</p>
+<p class='doc-paragraph'>By selecting the <strong>ESP32 DevKit V1</strong> and the <strong>RC522 13.56 MHz RFID reader</strong>, the system achieves direct 3.3V electrical compatibility, eliminates hazardous level shifting, and preserves native wireless capabilities for future milestones. The tri-state physical feedback system (Green, Red, Yellow LEDs + Active Buzzer with NPN isolation) provides unmistakable visual and acoustic fraud deterrence that directly mirrors the software dashboard&#39;s security alerts.</p>
+<p class='doc-paragraph'>This hardware plan fulfills all project requirements while remaining strictly technology-neutral regarding future backend and database architectures. The procurement checklist and wiring definitions provided herein prepare the engineering team for immediate, error-free physical assembly.</p>
+
+    </div>
+  </div>
+</body>
+</html>

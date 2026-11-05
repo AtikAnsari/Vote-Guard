@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote-Guard | Admin Security & 2FA Console</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem("voteGuardTheme") || "light";
+            const isDark = savedTheme === "dark" || 
+                (savedTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+            if (isDark) {
+                document.documentElement.setAttribute("data-theme", "dark");
+            } else {
+                document.documentElement.setAttribute("data-theme", "light");
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo-icon">🛡️</span>
+            <span>VOTE-GUARD</span>
+        </div>
+
+        <div class="admin-section">
+            <div class="theme-switcher">
+                <select id="themeSelect" class="theme-select" aria-label="Theme Selection">
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="system">💻 System</option>
+                </select>
+            </div>
+
+            <!-- Role Badge -->
+            <span class="role-badge role-badge-admin">🛡️ Role: Administrator</span>
+            <span id="adminNameDisplay" class="admin-name">System Administrator</span>
+
+            <a href="operator.html" class="logout-btn" style="text-decoration:none;">🖥️ Operator Screen</a>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+    </header>
+
+    <!-- ================= MAIN ADMIN CONTENT ================= -->
+    <main class="dashboard">
+
+        <!-- Page Heading -->
+        <div class="page-heading">
+            <div>
+                <h1>Admin Security 
+                    
+                </h1>
+                <p>Centralized Voter Management, 2FA KYC Credential Registry & Tamper-Evident Audit Storage</p>
+            </div>
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                <span id="systemStatusText">MySQL Connected</span>
+            </div>
+        </div>
+
+        <!-- ================= STAT CARDS ================= -->
+        <section class="stats-container">
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div>
+                    <p>Total Registered Voters</p>
+                    <h2 id="totalVoters">0</h2>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✓</div>
+                <div>
+                    <p>Votes Recorded</p>
+                    <h2 id="votesRecorded">0</h2>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">◷</div>
+                <div>
+                    <p>Pending Votes</p>
+                    <h2 id="pendingVotes">0</h2>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⚠</div>
+                <div>
+                    <p>Duplicate Fraud Blocked</p>
+                    <h2 id="fraudAttempts">0</h2>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= 2FA REGISTRATION & CREDENTIALS ================= -->
+        <div class="admin-grid">
+
+            <!-- 1. REGISTER VOTER WITH 2FA CREDENTIAL BINDING -->
+            <div class="admin-box">
+                <div class="admin-box-header">
+                    <h3>🛡️ Register Voter & Bind 2FA Credentials</h3>
+                    <span class="badge-pill badge-assigned">2FA Protected</span>
+                </div>
+
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+                    Bind a physical RFID UID to verified Aadhaar and Election Commission (EPIC) credentials.
+                    The system prohibits registering multiple UIDs to the same citizen identity.
+                </p>
+
+                <form id="voterRegistrationForm">
+
+                    <div class="form-group">
+                        <label for="regRfidUid">Physical RFID Tag UID: *</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="regRfidUid" class="form-input" placeholder="e.g. 8A4F123B or tap on reader" required>
+                            <button type="button" id="tapToFillBtn" class="logout-btn" style="white-space: nowrap; padding: 0 14px; font-size: 13px;">📡 Tap to Capture</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regVoterName">Citizen Full Name: *</label>
+                        <input type="text" id="regVoterName" class="form-input" placeholder="e.g. Aman Patel" required>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="regAadhar">Aadhaar Number (12 digits): *</label>
+                            <input type="text" id="regAadhar" class="form-input" placeholder="e.g. 234567890123" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="regEpic">Election Card / EPIC: *</label>
+                            <input type="text" id="regEpic" class="form-input" placeholder="e.g. VGD1000002" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPhone">Mobile Number (Dummy 2FA Contact):</label>
+                        <input type="text" id="regPhone" class="form-input" placeholder="e.g. 9876543211">
+                    </div>
+
+                    <button type="submit" id="submitRegBtn" class="btn-primary" style="margin-top: 10px;">
+                        🛡️ Verify Credentials & Register RFID UID
+                    </button>
+
+                </form>
+
+                <!-- 2FA Alert Box -->
+                <div id="regAlertBox" class="alert-box"></div>
+
+            </div>
+
+
+            <!-- 2. 2FA GOVERNMENT KYC CREDENTIALS REGISTRY -->
+            <div class="admin-box">
+                <div class="admin-box-header">
+                    <h3>📋 2FA Citizen KYC Credentials</h3>
+                    <span id="credAvailableCount" class="badge-pill badge-unassigned">0 Unassigned</span>
+                </div>
+
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 14px;">
+                    Pre-authorized government identities. When an identity is assigned, it cannot be rebound to another card.
+                </p>
+
+                <div class="table-container" style="max-height: 380px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Citizen Name</th>
+                                <th>Aadhaar</th>
+                                <th>Election Card</th>
+                                <th>2FA Assignment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="credentialsTableBody">
+                            <tr>
+                                <td colspan="4" class="empty-row">Loading credentials...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= 3. OFFICIAL REGISTERED VOTERS DIRECTORY ================= -->
+        <section class="recent-section" style="margin-bottom: 30px;">
+            <div class="section-header">
+                <div>
+                    <h2>Official Registered Voters Directory</h2>
+                    <p>Citizens registered to vote at this polling station.</p>
+                </div>
+                <button id="refreshVotersBtn" class="reset-btn">
+                    🔄 Refresh Voters
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Voter ID</th>
+                            <th>Citizen Name</th>
+                            <th>Aadhaar Number</th>
+                            <th>Assigned RFID UID</th>
+                            <th>Voting Status</th>
+                            <th>Voted Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="votersTableBody">
+                        <tr>
+                            <td colspan="6" class="empty-row">Loading voters...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <!-- ================= 4. RECORDED VOTED RFIDs ================= -->
+        <div class="recorded-card" style="margin-bottom: 30px;">
+            <div class="card-header">
+                <div>
+                    <h2>Recorded Voted Cards</h2>
+                    <p>RFID UIDs that have already cast their vote.</p>
+                </div>
+                <span class="recorded-count" id="recordedCount">0 Voters</span>
+            </div>
+            <div class="recorded-list" id="recordedVotersTable">
+                <div class="no-recorded">No votes recorded yet.</div>
+            </div>
+        </div>
+
+
+        <!-- ================= 5. PERMANENT SYSTEM AUDIT TRAIL ================= -->
+        <section class="recent-section">
+            <div class="section-header">
+                <div>
+                    <h2>Permanent System Audit Trail</h2>
+                    <p>Tamper-evident chronological log of all votes, duplicate attempts, and admin events.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="resetVotesBtn" class="reset-btn" style="color: #d64545; border-color: #fca5a5;">
+                        ⚠️ Reset Voting Statuses (Demo Mode)
+                    </button>
+                    <button id="refreshAuditBtn" class="reset-btn">
+                        🔄 Refresh Logs
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Event Type</th>
+                            <th>RFID UID</th>
+                            <th>Status</th>
+                            <th>Forensic Details</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <tr>
+                            <td colspan="6" class="empty-row">Loading audit logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="admin.js"></script>
+</body>
+</html>
