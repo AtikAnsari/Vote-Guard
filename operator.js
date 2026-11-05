@@ -8,6 +8,9 @@ const API_BASE = (window.location.hostname && (window.location.port === "8000"))
     ? window.location.origin 
     : "http://127.0.0.1:8000";
 
+// Centralized Demo Mode Detection
+const IS_DEMO = window.VoteGuardMock ? window.VoteGuardMock.isDemoMode() : false;
+
 // Auth verification
 const token = sessionStorage.getItem("voteGuardToken");
 const userStr = sessionStorage.getItem("voteGuardUser");
@@ -36,11 +39,30 @@ const ledRed = document.getElementById("ledRed");
 const buzzerIndicator = document.getElementById("buzzerIndicator");
 const themeSelect = document.getElementById("themeSelect");
 
+// Demo Simulator DOM Elements
+const demoOperatorBanner = document.getElementById("demoOperatorBanner");
+const demoSimulatorCard = document.getElementById("demoSimulatorCard");
+const simValidCardBtn = document.getElementById("simValidCardBtn");
+const simDuplicateCardBtn = document.getElementById("simDuplicateCardBtn");
+const simUnregisteredCardBtn = document.getElementById("simUnregisteredCardBtn");
+const simCustomUid = document.getElementById("simCustomUid");
+const simCustomUidBtn = document.getElementById("simCustomUidBtn");
+const resetDemoVotesBtn = document.getElementById("resetDemoVotesBtn");
+
 let lastEventId = 0;
 let resetTimer = null;
 let serialPort = null;
 let serialWriter = null;
 let isSerialReading = false;
+
+// Activate Demo Mode UI if running in Demo Mode
+if (IS_DEMO) {
+    if (demoOperatorBanner) demoOperatorBanner.style.display = "block";
+    if (demoSimulatorCard) demoSimulatorCard.style.display = "block";
+    receiverStatusDot.className = "status-dot status-dot-connected";
+    receiverStatusText.textContent = "Demo Simulator Online";
+    receiverStatusText.style.color = "#16a34a";
+}
 
 
 // ================= LOGOUT =================
@@ -249,7 +271,7 @@ async function readSerialLoop() {
                         lastHardwareScanTime = nowMs;
 
                         console.log("Hardware Scanned RFID UID:", extractedUid);
-                        verifyCardFromHardware(extractedUid);
+                        executeCardVerification(extractedUid);
                     }
                 }
             }
@@ -272,10 +294,39 @@ async function sendSerialCommand(cmdChar) {
     }
 }
 
-connectSerialBtn.addEventListener("click", connectSerialPort);
+connectSerialBtn.addEventListener("click", () => {
+    if (IS_DEMO) {
+        alert("In Public Demo Mode, ESP32 DevKit V1 and RC522 RFID reader are simulated in-browser. Use the RFID Hardware Simulator buttons below!");
+        return;
+    }
+    connectSerialPort();
+});
 
 
 // ================= CARD VERIFICATION EXECUTION =================
+
+function executeCardVerification(rfid_uid) {
+    const cleanUid = (rfid_uid || "").trim().toUpperCase();
+    if (!cleanUid) return;
+
+    // Public Demo Mode interceptor: use client-side mock engine
+    if (IS_DEMO && window.VoteGuardMock) {
+        try {
+            const data = window.VoteGuardMock.verifyAndRecord(cleanUid);
+            if (data.event_id) {
+                lastEventId = Math.max(lastEventId, data.event_id);
+            }
+            setOperatorDisplay(data.status, data.hardware_led, data);
+            window.VoteGuardMock.playBuzzerSound(data.hardware_led);
+        } catch (err) {
+            setOperatorDisplay("ERROR", "YELLOW", { rfid_uid: cleanUid });
+        }
+        return;
+    }
+
+    // Full-Stack Mode: Post to live FastAPI endpoint
+    verifyCardFromHardware(cleanUid);
+}
 
 async function verifyCardFromHardware(rfid_uid) {
     try {
@@ -296,11 +347,65 @@ async function verifyCardFromHardware(rfid_uid) {
 }
 
 
+// ================= WIRE DEMO HARDWARE SIMULATOR =================
+
+if (IS_DEMO) {
+    if (simValidCardBtn) {
+        simValidCardBtn.addEventListener("click", () => executeCardVerification("71411605"));
+    }
+    if (simDuplicateCardBtn) {
+        simDuplicateCardBtn.addEventListener("click", () => executeCardVerification("B2C3D4E5"));
+    }
+    if (simUnregisteredCardBtn) {
+        simUnregisteredCardBtn.addEventListener("click", () => executeCardVerification("99AABBCC"));
+    }
+    if (simCustomUidBtn && simCustomUid) {
+        simCustomUidBtn.addEventListener("click", () => {
+            const val = simCustomUid.value.trim().toUpperCase();
+            if (!val) {
+                alert("Please enter a custom RFID UID to test.");
+                return;
+            }
+            executeCardVerification(val);
+        });
+        simCustomUid.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                simCustomUidBtn.click();
+            }
+        });
+    }
+    if (resetDemoVotesBtn) {
+        resetDemoVotesBtn.addEventListener("click", () => {
+            if (window.VoteGuardMock) {
+                window.VoteGuardMock.resetVotes();
+                resetOperatorDisplay();
+                alert("Demo voting flags have been reset to 'Not Voted'. You can now test voting again with Aman Patel or Rajesh Kumar!");
+            }
+        });
+    }
+}
+
+
 // ================= LIVE WIRELESS / WI-FI RECEIVER LISTENER =================
 
 let isInitialPoll = true;
 
 async function pollReceiverEvents() {
+    // In Public Demo Mode, check local mock engine state without HTTP requests
+    if (IS_DEMO && window.VoteGuardMock) {
+        try {
+            const data = window.VoteGuardMock.getLatestEvent();
+            if (data && data.event_id > lastEventId) {
+                lastEventId = data.event_id;
+                setOperatorDisplay(data.status, data.hardware_led, data);
+                window.VoteGuardMock.playBuzzerSound(data.hardware_led);
+            }
+        } catch (e) {}
+        return;
+    }
+
+    // Full-Stack Mode: Poll FastAPI backend for physical ESP32 Wi-Fi scans
     try {
         const response = await fetch(`${API_BASE}/api/vote/latest-event`);
         if (response.ok) {

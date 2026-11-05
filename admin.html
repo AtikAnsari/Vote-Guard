@@ -51,15 +51,31 @@
         <!-- Page Heading -->
         <div class="page-heading">
             <div>
-                <h1>Admin Security 
-                    
-                </h1>
+                <h1>Admin Security Console</h1>
                 <p>Centralized Voter Management, 2FA KYC Credential Registry & Tamper-Evident Audit Storage</p>
             </div>
 
             <div class="system-status">
                 <span class="status-dot"></span>
                 <span id="systemStatusText">MySQL Connected</span>
+            </div>
+        </div>
+
+        <!-- Public Demo Mode Informational Banner -->
+        <div id="demoAdminBanner" class="demo-admin-banner" style="display: none;">
+            <div class="demo-admin-banner-inner">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span class="demo-badge">🌐 PUBLIC DEMO MODE</span>
+                        <strong>Interactive In-Browser Simulation Active</strong>
+                    </div>
+                    <p style="font-size: 13px; color: #475569; margin: 0;">
+                        Simulating centralized MySQL database, 2FA KYC registry, and tamper-evident audit storage in localStorage. All changes are local to your browser.
+                    </p>
+                </div>
+                <button type="button" id="demoResetStorageBtn" class="reset-btn" style="color: #d64545; border-color: #fca5a5; background: #fff5f5;">
+                    🔄 Reset All Demo Data
+                </button>
             </div>
         </div>
 
@@ -282,6 +298,7 @@
 
     </main>
 
+    <script src="demo-mock-engine.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

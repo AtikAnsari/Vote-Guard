@@ -45,6 +45,14 @@
                 <p>Sign in to access your role-based terminal or create a new account.</p>
             </div>
 
+            <!-- Public Demo Mode Banner (Active on GitHub Pages / ?demo=true) -->
+            <div id="demoModeBanner" class="demo-mode-banner" style="display: none;">
+                <div class="demo-banner-content">
+                    <span class="demo-badge">🌐 PUBLIC DEMO MODE</span>
+                    <span>Running client-side simulation. No backend or physical hardware required.</span>
+                </div>
+            </div>
+
             <!-- Pre-configured Credentials Quick-Fill Hint -->
             <div class="quick-credentials-box">
                 <div class="quick-cred-title">🔑 Pre-Configured Test Logins (Click to Auto-Fill):</div>
@@ -122,6 +130,7 @@
         </div>
     </main>
 
+    <script src="demo-mock-engine.js"></script>
     <script src="auth.js"></script>
 </body>
 </html>

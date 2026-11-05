@@ -7,7 +7,11 @@ const API_BASE = (window.location.hostname && (window.location.port === "8000"))
     ? window.location.origin 
     : "http://127.0.0.1:8000";
 
+// Centralized Demo Mode Detection
+const IS_DEMO = window.VoteGuardMock ? window.VoteGuardMock.isDemoMode() : false;
+
 // DOM Elements
+const demoModeBanner = document.getElementById("demoModeBanner");
 const tabLoginBtn = document.getElementById("tabLoginBtn");
 const tabSignupBtn = document.getElementById("tabSignupBtn");
 const loginForm = document.getElementById("loginForm");
@@ -28,6 +32,11 @@ const signupRole = document.getElementById("signupRole");
 const signupSubmitBtn = document.getElementById("signupSubmitBtn");
 const signupAlert = document.getElementById("signupAlert");
 const themeSelect = document.getElementById("themeSelect");
+
+// Display Demo Banner if running in Public Demo Mode
+if (IS_DEMO && demoModeBanner) {
+    demoModeBanner.style.display = "block";
+}
 
 
 // ================= TAB SWITCHING =================
@@ -75,6 +84,22 @@ loginForm.addEventListener("submit", async (e) => {
     const username = loginUsername.value.trim();
     const password = loginPassword.value;
 
+    // Public Demo Mode interceptor
+    if (IS_DEMO && window.VoteGuardMock) {
+        try {
+            const data = window.VoteGuardMock.login(username, password);
+            window.location.href = data.redirect_url || (data.role === "admin" ? "admin.html" : "operator.html");
+            return;
+        } catch (err) {
+            loginAlert.textContent = `❌ ${err.message}`;
+            loginAlert.style.display = "block";
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.textContent = "Sign In & Enter Dashboard →";
+            return;
+        }
+    }
+
+    // Full-Stack Mode: Connect to live FastAPI backend
     try {
         const response = await fetch(`${API_BASE}/api/auth/login`, {
             method: "POST",
@@ -128,6 +153,22 @@ signupForm.addEventListener("submit", async (e) => {
         role: signupRole.value
     };
 
+    // Public Demo Mode interceptor
+    if (IS_DEMO && window.VoteGuardMock) {
+        try {
+            const data = window.VoteGuardMock.signup(payload);
+            window.location.href = data.redirect_url || (data.role === "admin" ? "admin.html" : "operator.html");
+            return;
+        } catch (err) {
+            signupAlert.textContent = `❌ ${err.message}`;
+            signupAlert.style.display = "block";
+            signupSubmitBtn.disabled = false;
+            signupSubmitBtn.textContent = "Create Account & Continue →";
+            return;
+        }
+    }
+
+    // Full-Stack Mode: Connect to live FastAPI backend
     try {
         const response = await fetch(`${API_BASE}/api/auth/signup`, {
             method: "POST",

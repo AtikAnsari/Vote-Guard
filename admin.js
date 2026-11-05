@@ -7,6 +7,9 @@ const API_BASE = (window.location.hostname && (window.location.port === "8000"))
     ? window.location.origin 
     : "http://127.0.0.1:8000";
 
+// Centralized Demo Mode Detection
+const IS_DEMO = window.VoteGuardMock ? window.VoteGuardMock.isDemoMode() : false;
+
 // Auth verification
 const token = sessionStorage.getItem("voteGuardToken");
 const userStr = sessionStorage.getItem("voteGuardUser");
@@ -26,6 +29,25 @@ document.getElementById("adminNameDisplay").textContent = user.full_name || user
 // DOM Elements
 const logoutBtn = document.getElementById("logoutBtn");
 const systemStatusText = document.getElementById("systemStatusText");
+const demoAdminBanner = document.getElementById("demoAdminBanner");
+const demoResetStorageBtn = document.getElementById("demoResetStorageBtn");
+
+// Activate Demo Mode Banner if in Demo Mode
+if (IS_DEMO && demoAdminBanner) {
+    demoAdminBanner.style.display = "block";
+}
+
+if (demoResetStorageBtn) {
+    demoResetStorageBtn.addEventListener("click", () => {
+        if (confirm("Reset all demo data (voters, 2FA KYC credentials, and audit logs) to pristine default state?")) {
+            if (window.VoteGuardMock) {
+                window.VoteGuardMock.resetAllData();
+                loadAllAdminData();
+                alert("All demo storage data has been restored to default seeds.");
+            }
+        }
+    });
+}
 
 const totalVoters = document.getElementById("totalVoters");
 const votesRecorded = document.getElementById("votesRecorded");
@@ -68,6 +90,48 @@ logoutBtn.addEventListener("click", () => {
 // ================= DATA LOADING =================
 
 async function loadAllAdminData() {
+    // Public Demo Mode interceptor: read from local mock engine
+    if (IS_DEMO && window.VoteGuardMock) {
+        try {
+            const stats = window.VoteGuardMock.getStats();
+            totalVoters.textContent = stats.total_voters;
+            votesRecorded.textContent = stats.votes_recorded;
+            pendingVotes.textContent = stats.pending_votes;
+            fraudAttempts.textContent = stats.fraud_attempts;
+            systemStatusText.textContent = "Mock Storage Active";
+            systemStatusText.style.color = "#16a34a";
+
+            cachedCredentials = window.VoteGuardMock.getCredentials();
+            renderCredentialsTable(cachedCredentials);
+
+            const voters = window.VoteGuardMock.getVoters();
+            renderVotersTable(voters);
+
+            const rfids = window.VoteGuardMock.getRecordedRfids();
+            recordedCount.textContent = `${rfids.length} Voter${rfids.length !== 1 ? "s" : ""}`;
+            if (rfids.length === 0) {
+                recordedVotersTable.innerHTML = `<div class="no-recorded">No votes recorded yet.</div>`;
+            } else {
+                recordedVotersTable.innerHTML = "";
+                rfids.forEach(uid => {
+                    const item = document.createElement("div");
+                    item.className = "recorded-rfid";
+                    item.textContent = uid;
+                    recordedVotersTable.appendChild(item);
+                });
+            }
+
+            const logs = window.VoteGuardMock.getAuditLogs();
+            renderAuditTable(logs);
+        } catch (err) {
+            console.error("Demo admin data loading failed:", err);
+            systemStatusText.textContent = "Demo Storage Error";
+            systemStatusText.style.color = "#dc2626";
+        }
+        return;
+    }
+
+    // Full-Stack Mode: Connect to live FastAPI backend
     const authHeader = { "Authorization": `Bearer ${token}` };
 
     try {
@@ -173,6 +237,32 @@ voterRegistrationForm.addEventListener("submit", async (e) => {
         phone_number: regPhone.value.trim() || null
     };
 
+    // Public Demo Mode interceptor: register in local mock storage
+    if (IS_DEMO && window.VoteGuardMock) {
+        try {
+            const newVoter = window.VoteGuardMock.registerVoter(payload);
+            regAlertBox.className = "alert-box alert-success";
+            regAlertBox.innerHTML = `<strong>✅ 2FA Voter Successfully Bound & Registered!</strong><br>Citizen <strong>${newVoter.name}</strong> (${newVoter.voter_code}) is now linked to RFID UID <code>${newVoter.rfid_uid}</code>.`;
+            regAlertBox.style.display = "block";
+
+            voterRegistrationForm.reset();
+            await loadAllAdminData();
+        } catch (err) {
+            regAlertBox.className = "alert-box alert-error";
+            if (err.status === 409) {
+                regAlertBox.innerHTML = `<strong>🚨 2FA Security Conflict Blocked:</strong><br>${err.message}`;
+            } else {
+                regAlertBox.innerHTML = `<strong>Error:</strong> ${err.message}`;
+            }
+            regAlertBox.style.display = "block";
+        } finally {
+            submitRegBtn.disabled = false;
+            submitRegBtn.textContent = "🛡️ Verify Credentials & Register RFID UID";
+        }
+        return;
+    }
+
+    // Full-Stack Mode: Connect to live FastAPI backend
     try {
         const response = await fetch(`${API_BASE}/api/admin/voters`, {
             method: "POST",
@@ -228,6 +318,20 @@ let captureInterval = null;
 
 if (tapToFillBtn) {
     tapToFillBtn.addEventListener("click", async () => {
+        // Public Demo Mode interceptor: capture latest event or sample unassigned tag
+        if (IS_DEMO && window.VoteGuardMock) {
+            const latest = window.VoteGuardMock.getLatestEvent();
+            const captured = (latest && latest.rfid_uid) ? latest.rfid_uid : "E4D3C2B1";
+            regRfidUid.value = captured;
+            tapToFillBtn.textContent = `✓ Captured: ${captured}`;
+            tapToFillBtn.style.background = "#dcfce7";
+            setTimeout(() => {
+                tapToFillBtn.textContent = "📡 Tap to Capture";
+                tapToFillBtn.style.background = "";
+            }, 3000);
+            return;
+        }
+
         if (isListeningForCard) {
             clearInterval(captureInterval);
             isListeningForCard = false;
@@ -332,6 +436,15 @@ resetVotesBtn.addEventListener("click", async () => {
         return;
     }
 
+    // Public Demo Mode interceptor: reset local mock storage ONLY (NEVER calls backend)
+    if (IS_DEMO && window.VoteGuardMock) {
+        window.VoteGuardMock.resetVotes();
+        alert("All demo voting flags have been reset to 'Not Voted'.");
+        await loadAllAdminData();
+        return;
+    }
+
+    // Full-Stack Mode: Connect to live FastAPI backend
     try {
         const res = await fetch(`${API_BASE}/api/admin/reset-votes`, {
             method: "POST",

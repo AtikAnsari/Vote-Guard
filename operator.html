@@ -47,6 +47,14 @@
     <!-- ================= MAIN OPERATOR VIEW ================= -->
     <main class="dashboard">
 
+        <!-- Public Demo Mode Banner -->
+        <div id="demoOperatorBanner" class="demo-mode-banner" style="display: none; margin-bottom: 20px;">
+            <div class="demo-banner-content">
+                <span class="demo-badge">🌐 PUBLIC DEMO MODE</span>
+                <span>Hardware simulation active. Use the Interactive RFID Simulator below to test card scans.</span>
+            </div>
+        </div>
+
         <!-- Page Heading & Hardware Connection Bar -->
         <div class="page-heading">
             <div>
@@ -95,6 +103,44 @@
                 </div>
             </div>
 
+            <!-- Interactive Demo Mode Hardware Simulator -->
+            <div id="demoSimulatorCard" class="demo-simulator-card" style="display: none;">
+                <div class="demo-sim-header">
+                    <div class="demo-sim-title">
+                        <span>🎮</span>
+                        <strong>RFID HARDWARE SIMULATOR (Public Demo Mode)</strong>
+                    </div>
+                    <span class="demo-badge demo-badge-subtle">ESP32 + RC522 Simulation</span>
+                </div>
+                <p class="demo-sim-subtitle">
+                    Simulate physical RFID tag scans on the RC522 reader. Click any pre-configured scenario or enter a custom UID to test duplicate detection and access control:
+                </p>
+                <div class="demo-sim-buttons">
+                    <button type="button" id="simValidCardBtn" class="sim-btn sim-btn-valid">
+                        🟢 Tap Valid Card: Aman Patel (71411605)
+                    </button>
+                    <button type="button" id="simDuplicateCardBtn" class="sim-btn sim-btn-duplicate">
+                        🔴 Tap Already Voted Card: Rajesh Kumar (B2C3D4E5)
+                    </button>
+                    <button type="button" id="simUnregisteredCardBtn" class="sim-btn sim-btn-unregistered">
+                        🟡 Tap Unregistered Card: Unknown Tag (99AABBCC)
+                    </button>
+                </div>
+                <div class="demo-sim-custom">
+                    <label for="simCustomUid">Or test a custom RFID UID (e.g. Priya Sharma 8A4F123B or new hex):</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="simCustomUid" class="form-input" placeholder="e.g. 8A4F123B" style="text-transform: uppercase;">
+                        <button type="button" id="simCustomUidBtn" class="btn-primary" style="white-space: nowrap; width: auto; padding: 0 18px;">
+                            📡 Tap Card
+                        </button>
+                    </div>
+                </div>
+                <div class="demo-sim-footer">
+                    <span>⚡ In Full-Stack Mode, this terminal connects directly to the physical ESP32 via Wi-Fi or USB Serial.</span>
+                    <button type="button" id="resetDemoVotesBtn" class="sim-btn-reset">🔄 Reset Voting Flags</button>
+                </div>
+            </div>
+
             <!-- Hardware Live Sync Details -->
             <div style="margin-top: 20px; font-size: 13px; color: #64748b; line-height: 1.6;">
                 <div>⚡ <strong>Hardware Setup:</strong> ESP32 DevKit V1 + RC522 RFID Reader (SPI: D5, D18, D19, D23, D4)</div>
@@ -105,6 +151,7 @@
 
     </main>
 
+    <script src="demo-mock-engine.js"></script>
     <script src="operator.js"></script>
 </body>
 </html>
